@@ -1,0 +1,200 @@
+package com.billerby.roadvault.controller;
+
+import com.billerby.roadvault.dto.PropertyDTO;
+import com.billerby.roadvault.exception.ResourceNotFoundException;
+import com.billerby.roadvault.model.Owner;
+import com.billerby.roadvault.model.Property;
+import com.billerby.roadvault.service.OwnerService;
+import com.billerby.roadvault.service.PropertyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * REST controller for managing properties.
+ */
+@RestController
+@RequestMapping("/v1/properties")
+public class PropertyController {
+    
+    private final PropertyService propertyService;
+    private final OwnerService ownerService;
+    
+    @Autowired
+    public PropertyController(PropertyService propertyService, OwnerService ownerService) {
+        this.propertyService = propertyService;
+        this.ownerService = ownerService;
+    }
+    
+    /**
+     * GET /v1/properties : Get all properties.
+     *
+     * @return the ResponseEntity with status 200 (OK) and the list of properties in body
+     */
+    @GetMapping
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<PropertyDTO>> getAllProperties() {
+        List<Property> properties = propertyService.getAllPropertiesWithOwners();
+        List<PropertyDTO> propertyDTOs = properties.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(propertyDTOs);
+    }
+    
+    /**
+     * GET /v1/properties/:id : Get the "id" property.
+     *
+     * @param id the id of the property to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the property, or with status 404 (Not Found)
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PropertyDTO> getProperty(@PathVariable Long id) {
+        Property property = propertyService.getPropertyWithOwnerById(id);
+        return ResponseEntity.ok(convertToDTO(property));
+    }
+    
+    /**
+     * POST /v1/properties : Create a new property.
+     *
+     * @param propertyDTO the property to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new property
+     */
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PropertyDTO> createProperty(@RequestBody PropertyDTO propertyDTO) {
+        Property property = convertToEntity(propertyDTO);
+        
+        Property createdProperty;
+        if (propertyDTO.getOwner() != null && propertyDTO.getOwner().getId() != null) {
+            createdProperty = propertyService.createPropertyWithOwner(property, propertyDTO.getOwner().getId());
+        } else {
+            createdProperty = propertyService.createProperty(property);
+        }
+        
+        return new ResponseEntity<>(convertToDTO(createdProperty), HttpStatus.CREATED);
+    }
+    
+    /**
+     * PUT /v1/properties/:id : Update an existing property.
+     *
+     * @param id the id of the property to update
+     * @param propertyDTO the property to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated property
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PropertyDTO> updateProperty(@PathVariable Long id, @RequestBody PropertyDTO propertyDTO) {
+        Property property = convertToEntity(propertyDTO);
+        Property updatedProperty = propertyService.updateProperty(id, property);
+        return ResponseEntity.ok(convertToDTO(updatedProperty));
+    }
+    
+    /**
+     * DELETE /v1/properties/:id : Delete the "id" property.
+     *
+     * @param id the id of the property to delete
+     * @return the ResponseEntity with status 204 (NO_CONTENT)
+     */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProperty(@PathVariable Long id) {
+        propertyService.deleteProperty(id);
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * GET /v1/properties/search?designation=:designation : Search properties by designation.
+     *
+     * @param designation the designation to search for
+     * @return the ResponseEntity with status 200 (OK) and the list of matching properties in body
+     */
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<PropertyDTO>> searchPropertiesByDesignation(@RequestParam String designation) {
+        List<Property> properties = propertyService.searchPropertiesByDesignation(designation);
+        List<PropertyDTO> propertyDTOs = properties.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(propertyDTOs);
+    }
+    
+    /**
+     * PUT /v1/properties/:id/owner/:ownerId : Change the owner of a property.
+     *
+     * @param id the id of the property
+     * @param ownerId the id of the new owner
+     * @return the ResponseEntity with status 200 (OK) and with body the updated property
+     */
+    @PutMapping("/{id}/owner/{ownerId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<PropertyDTO> changeOwner(@PathVariable Long id, @PathVariable Long ownerId) {
+        Property updatedProperty = propertyService.changeOwner(id, ownerId);
+        return ResponseEntity.ok(convertToDTO(updatedProperty));
+    }
+    
+    /**
+     * GET /v1/properties/total-share : Get the total share ratio of all properties.
+     *
+     * @return the ResponseEntity with status 200 (OK) and with body the total share ratio
+     */
+    @GetMapping("/total-share")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BigDecimal> getTotalShareRatio() {
+        BigDecimal totalShare = propertyService.calculateTotalShareRatio();
+        return ResponseEntity.ok(totalShare);
+    }
+    
+    /**
+     * Convert a Property entity to a PropertyDTO.
+     *
+     * @param property the entity to convert
+     * @return the converted DTO
+     */
+    private PropertyDTO convertToDTO(Property property) {
+        PropertyDTO dto = new PropertyDTO();
+        dto.setId(property.getId());
+        dto.setPropertyDesignation(property.getPropertyDesignation());
+        dto.setShareRatio(property.getShareRatio());
+        dto.setAddress(property.getAddress());
+        
+        if (property.getOwner() != null) {
+            com.billerby.roadvault.dto.OwnerDTO ownerDTO = new com.billerby.roadvault.dto.OwnerDTO();
+            ownerDTO.setId(property.getOwner().getId());
+            ownerDTO.setName(property.getOwner().getName());
+            ownerDTO.setEmail(property.getOwner().getEmail());
+            ownerDTO.setPhone(property.getOwner().getPhone());
+            ownerDTO.setAddress(property.getOwner().getAddress());
+            ownerDTO.setPostalCode(property.getOwner().getPostalCode());
+            ownerDTO.setCity(property.getOwner().getCity());
+            
+            dto.setOwner(ownerDTO);
+        }
+        
+        return dto;
+    }
+    
+    /**
+     * Convert a PropertyDTO to a Property entity.
+     *
+     * @param dto the DTO to convert
+     * @return the converted entity
+     */
+    private Property convertToEntity(PropertyDTO dto) {
+        Property property = new Property();
+        property.setId(dto.getId());
+        property.setPropertyDesignation(dto.getPropertyDesignation());
+        property.setShareRatio(dto.getShareRatio());
+        property.setAddress(dto.getAddress());
+        
+        // Don't set owner here, it's handled separately in service methods
+        
+        return property;
+    }
+}
