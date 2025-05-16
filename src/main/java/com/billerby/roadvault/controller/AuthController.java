@@ -39,6 +39,9 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtUtils = jwtUtils;
+        // Add this logging
+        System.out.println("AuthenticationManager initialized: " + (authenticationManager != null));
+    
     }
     
     /**

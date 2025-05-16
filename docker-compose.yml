@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/roadvault
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_LIQUIBASE_ENABLED=true
+      # Use a 64-byte key (512 bits) for HS512
+      - ROADVAULT_APP_JWTSECRET=fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82
+      - ROADVAULT_APP_JWTEXPIRATIONMS=86400000
+      - LOGGING_LEVEL_COM_BILLERBY_ROADVAULT_SECURITY=TRACE
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_AUTHENTICATION=TRACE
+      - LOGGING_LEVEL_ROOT=DEBUG
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=DEBUG
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=roadvault
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
