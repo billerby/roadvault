@@ -80,17 +80,38 @@ public class SecurityConfig {
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-    
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
+
+        // Tillåtna ursprung (origins) - behåll dina befintliga och lägg till frontend-utvecklingsserver
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:8080",
+                "http://localhost:3000",
+                "http://localhost:5173"  // Vite standard utvecklingsserver
+        ));
+
+        // Tillåtna HTTP-metoder - behåller dina befintliga
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        // Tillåtna headers från klienten - behåller dina befintliga inkl. x-auth-token
+        configuration.setAllowedHeaders(Arrays.asList(
+                "authorization", "content-type", "x-auth-token"
+        ));
+
+        // Exponerade headers - behåller x-auth-token enligt din befintliga konfiguration
         configuration.setExposedHeaders(List.of("x-auth-token"));
+
+        // Tillåt cookies - behåller din befintliga konfiguration
         configuration.setAllowCredentials(true);
+
+        // Registrera konfigurationen för alla sökvägar
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
