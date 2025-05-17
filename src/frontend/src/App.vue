@@ -82,7 +82,7 @@
         ></v-list-item>
         
         <v-list-item 
-          v-if="hasRole('ROLE_ADMIN')"
+          v-if="hasRole('ADMIN')"
           prepend-icon="mdi-file-document-multiple"
           title="Fakturor"
           rounded="lg"
@@ -90,7 +90,7 @@
         ></v-list-item>
         
         <v-list-item 
-          v-if="hasRole('ROLE_ADMIN')"
+          v-if="hasRole('ADMIN')"
           prepend-icon="mdi-cash-multiple"
           title="Betalningar"
           rounded="lg"

@@ -13,7 +13,7 @@
           <v-toolbar-title>Fastigheter</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn
-            v-if="hasRole('ROLE_ADMIN')"
+            v-if="hasRole('ADMIN')"
             color="primary"
             dark
             class="mb-2"
@@ -36,10 +36,10 @@
         <v-icon small class="mr-2" @click="viewProperty(item)">
           mdi-eye
         </v-icon>
-        <v-icon v-if='hasRole("ROLE_ADMIN")' small class="mr-2" @click="openDialog(item)">
+        <v-icon v-if='hasRole("ADMIN")' small class="mr-2" @click="openDialog(item)">
           mdi-pencil
         </v-icon>
-        <v-icon v-if='hasRole("ROLE_ADMIN")' small @click="confirmDelete(item)">
+        <v-icon v-if='hasRole("ADMIN")' small @click="confirmDelete(item)">
           mdi-delete
         </v-icon>
       </template>

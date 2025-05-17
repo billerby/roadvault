@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import authService from '@/services/auth.service';
 export default {
   name: 'PropertyForm',
   
@@ -77,6 +78,9 @@ export default {
   },
   
   methods: {
+    hasRole(role) {
+      return authService.hasRole(role);
+    },
     async submitForm() {
       if (this.$refs.form.validate()) {
         this.loading = true;
