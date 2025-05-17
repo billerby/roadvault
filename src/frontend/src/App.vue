@@ -29,7 +29,7 @@
               prepend-icon="mdi-account-circle"
               class="text-subtitle-1 font-weight-medium"
             >
-              Admin
+              {{ getCurrentUser().username }}
               <v-icon right>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
@@ -53,8 +53,8 @@
     >
       <v-list-item
         prepend-avatar="https://ui-avatars.com/api/?name=Admin&background=2E7D32&color=fff"
-        title="Admin"
-        subtitle="admin@example.com"
+        :title="getCurrentUser().username"
+        :subtitle="getCurrentUser().email"
         class="py-4 primary lighten-4"
       ></v-list-item>
       
@@ -64,7 +64,7 @@
         <v-list-item 
           to="/" 
           :active="$route.path === '/'"
-          active-color="primary"
+          color="primary"
           prepend-icon="mdi-view-dashboard"
           title="Översikt"
           rounded="lg"
@@ -74,7 +74,7 @@
         <v-list-item 
           to="/properties" 
           :active="$route.path.startsWith('/properties')"
-          active-color="primary"
+          color="primary"
           prepend-icon="mdi-home-group"
           title="Fastigheter"
           rounded="lg"
@@ -82,6 +82,7 @@
         ></v-list-item>
         
         <v-list-item 
+          v-if="hasRole('ROLE_ADMIN')"
           prepend-icon="mdi-file-document-multiple"
           title="Fakturor"
           rounded="lg"
@@ -89,6 +90,7 @@
         ></v-list-item>
         
         <v-list-item 
+          v-if="hasRole('ROLE_ADMIN')"
           prepend-icon="mdi-cash-multiple"
           title="Betalningar"
           rounded="lg"
@@ -145,6 +147,12 @@ export default {
   },
   
   methods: {
+    getCurrentUser() {
+      return authService.getCurrentUser();
+    },
+    hasRole(role) {
+      return authService.hasRole(role);
+    },
     logout() {
       authService.logout();
       this.$router.push('/login');

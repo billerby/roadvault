@@ -13,6 +13,7 @@
           <v-toolbar-title>Fastigheter</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn
+            v-if="hasRole('ROLE_ADMIN')"
             color="primary"
             dark
             class="mb-2"
@@ -35,10 +36,10 @@
         <v-icon small class="mr-2" @click="viewProperty(item)">
           mdi-eye
         </v-icon>
-        <v-icon small class="mr-2" @click="openDialog(item)">
+        <v-icon v-if='hasRole("ROLE_ADMIN")' small class="mr-2" @click="openDialog(item)">
           mdi-pencil
         </v-icon>
-        <v-icon small @click="confirmDelete(item)">
+        <v-icon v-if='hasRole("ROLE_ADMIN")' small @click="confirmDelete(item)">
           mdi-delete
         </v-icon>
       </template>
@@ -112,6 +113,7 @@
 
 <script>
 import propertyService from '../services/property.service';
+import authService from '../services/auth.service';
 import ownerService from '../services/owner.service';
 import PropertyForm from './PropertyForm.vue';
 import OwnerForm from './OwnerForm.vue';
@@ -188,6 +190,9 @@ export default {
   },
   
   methods: {
+    hasRole(role) {
+      return authService.hasRole(role);
+    },
     async fetchProperties() {
       this.loading = true;
       this.error = null;
