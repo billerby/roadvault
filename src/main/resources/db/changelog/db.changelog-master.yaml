@@ -27,8 +27,6 @@ databaseChangeLog:
               - column:
                   name: address
                   type: varchar(255)
-                  constraints:
-                    nullable: false
               - column:
                   name: postal_code
                   type: varchar(20)
@@ -351,3 +349,9 @@ databaseChangeLog:
             columns:
               - column:
                   name: year
+
+  # Include the new changesets
+  - include:
+      file: db/changelog/changes/02-multiple-owners-per-property.yaml
+  - include:
+      file: db/changelog/changes/03-import-owners-properties.yaml

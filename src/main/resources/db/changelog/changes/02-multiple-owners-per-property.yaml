@@ -1,0 +1,74 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: erib
+      comment: Modify Owner-Property relationship to allow multiple owners with main contact
+      changes:
+        # Drop the existing foreign key constraint
+        - dropForeignKeyConstraint:
+            baseTableName: properties
+            constraintName: fk_property_owner
+
+        # Remove the owner_id column from properties
+        - dropColumn:
+            tableName: properties
+            columnName: owner_id
+
+        # Create join table for many-to-many relationship
+        - createTable:
+            tableName: property_owners
+            columns:
+              - column:
+                  name: property_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_property_owners_property
+                    references: properties(id)
+              - column:
+                  name: owner_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_property_owners_owner
+                    references: owners(id)
+
+        # Add primary key constraint to the join table
+        - addPrimaryKey:
+            tableName: property_owners
+            columnNames: property_id, owner_id
+            constraintName: pk_property_owners
+
+        # Add main_contact_id column to properties
+        - addColumn:
+            tableName: properties
+            columns:
+              - column:
+                  name: main_contact_id
+                  type: bigint
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_property_main_contact
+                    references: owners(id)
+
+        # Create indexes
+        - createIndex:
+            indexName: idx_property_owners_property
+            tableName: property_owners
+            columns:
+              - column:
+                  name: property_id
+
+        - createIndex:
+            indexName: idx_property_owners_owner
+            tableName: property_owners
+            columns:
+              - column:
+                  name: owner_id
+
+        - createIndex:
+            indexName: idx_property_main_contact
+            tableName: properties
+            columns:
+              - column:
+                  name: main_contact_id

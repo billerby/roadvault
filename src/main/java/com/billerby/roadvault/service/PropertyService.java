@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service for managing properties.
@@ -59,10 +59,10 @@ public class PropertyService {
     }
 
     /**
-     * Get a property with its owner by ID.
+     * Get a property with its owners by ID.
      *
      * @param id The property ID
-     * @return The property with owner
+     * @return The property with owners
      * @throws ResourceNotFoundException if property is not found
      */
     public Property getPropertyWithOwnerById(Long id) {
@@ -82,19 +82,35 @@ public class PropertyService {
     }
 
     /**
-     * Create a new property with owner.
+     * Create a new property with owners and main contact.
      *
      * @param property The property to create
-     * @param ownerId The ID of the owner
+     * @param ownerIds List of owner IDs
+     * @param mainContactId The ID of the main contact (should be one of the owners)
      * @return The created property
-     * @throws ResourceNotFoundException if owner is not found
+     * @throws ResourceNotFoundException if any owner is not found
+     * @throws IllegalArgumentException if main contact is not in the owner list
      */
     @Transactional
-    public Property createPropertyWithOwner(Property property, Long ownerId) {
-        Owner owner = ownerRepository.findById(ownerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+    public Property createPropertyWithOwners(Property property, List<Long> ownerIds, Long mainContactId) {
+        // Add owners to the property
+        if (ownerIds != null && !ownerIds.isEmpty()) {
+            for (Long ownerId : ownerIds) {
+                Owner owner = ownerRepository.findById(ownerId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+                property.addOwner(owner);
+            }
+        }
         
-        property.setOwner(owner);
+        // Set main contact if provided
+        if (mainContactId != null) {
+            Owner mainContact = ownerRepository.findById(mainContactId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Main contact not found with id: " + mainContactId));
+            
+            // Set the main contact - this method will also add the owner if needed
+            property.setMainContactWithCheck(mainContact);
+        }
+        
         return propertyRepository.save(property);
     }
 
@@ -114,13 +130,6 @@ public class PropertyService {
         property.setPropertyDesignation(propertyDetails.getPropertyDesignation());
         property.setShareRatio(propertyDetails.getShareRatio());
         property.setAddress(propertyDetails.getAddress());
-        
-        // Only update owner if provided
-        if (propertyDetails.getOwner() != null && propertyDetails.getOwner().getId() != null) {
-            Owner owner = ownerRepository.findById(propertyDetails.getOwner().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + propertyDetails.getOwner().getId()));
-            property.setOwner(owner);
-        }
         
         return propertyRepository.save(property);
     }
@@ -162,22 +171,102 @@ public class PropertyService {
     }
 
     /**
-     * Change owner of a property.
+     * Add an owner to a property.
      *
      * @param propertyId The property ID
-     * @param ownerId The new owner ID
+     * @param ownerId The owner ID to add
      * @return The updated property
      * @throws ResourceNotFoundException if property or owner is not found
      */
     @Transactional
-    public Property changeOwner(Long propertyId, Long ownerId) {
+    public Property addOwner(Long propertyId, Long ownerId) {
         Property property = propertyRepository.findById(propertyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
         
         Owner owner = ownerRepository.findById(ownerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
         
-        property.setOwner(owner);
+        property.addOwner(owner);
+        return propertyRepository.save(property);
+    }
+
+    /**
+     * Remove an owner from a property.
+     *
+     * @param propertyId The property ID
+     * @param ownerId The owner ID to remove
+     * @return The updated property
+     * @throws ResourceNotFoundException if property or owner is not found
+     * @throws IllegalStateException if trying to remove the only owner
+     */
+    @Transactional
+    public Property removeOwner(Long propertyId, Long ownerId) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
+        
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+        
+        // Check if this is the only owner
+        if (property.getOwners().size() <= 1) {
+            throw new IllegalStateException("Cannot remove the only owner of a property");
+        }
+        
+        property.removeOwner(owner);
+        return propertyRepository.save(property);
+    }
+
+    /**
+     * Set the main contact for a property.
+     *
+     * @param propertyId The property ID
+     * @param ownerId The owner ID to set as main contact
+     * @return The updated property
+     * @throws ResourceNotFoundException if property or owner is not found
+     * @throws IllegalArgumentException if the owner is not associated with the property
+     */
+    @Transactional
+    public Property setMainContact(Long propertyId, Long ownerId) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
+        
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+        
+        property.setMainContactWithCheck(owner);
+        return propertyRepository.save(property);
+    }
+    
+    /**
+     * Update owners for a property.
+     *
+     * @param propertyId The property ID
+     * @param ownerIds The list of owner IDs
+     * @return The updated property
+     * @throws ResourceNotFoundException if property or any owner is not found
+     */
+    @Transactional
+    public Property updateOwners(Long propertyId, List<Long> ownerIds) {
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + propertyId));
+        
+        // Clear existing owners
+        property.getOwners().clear();
+        
+        // Add new owners
+        if (ownerIds != null && !ownerIds.isEmpty()) {
+            for (Long ownerId : ownerIds) {
+                Owner owner = ownerRepository.findById(ownerId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + ownerId));
+                property.addOwner(owner);
+            }
+        }
+        
+        // Reset main contact if not in new owners list
+        if (property.getMainContact() != null && !property.getOwners().contains(property.getMainContact())) {
+            property.setMainContact(null);
+        }
+        
         return propertyRepository.save(property);
     }
 }

@@ -14,9 +14,9 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     
     List<Property> findByPropertyDesignationContainingIgnoreCase(String designation);
     
-    @Query("SELECT p FROM Property p JOIN FETCH p.owner WHERE p.id = :id")
+    @Query("SELECT p FROM Property p LEFT JOIN FETCH p.owners LEFT JOIN FETCH p.mainContact WHERE p.id = :id")
     Optional<Property> findByIdWithOwner(@Param("id") Long id);
     
-    @Query("SELECT p FROM Property p JOIN FETCH p.owner")
+    @Query("SELECT p FROM Property p LEFT JOIN FETCH p.owners LEFT JOIN FETCH p.mainContact")
     List<Property> findAllWithOwners();
 }

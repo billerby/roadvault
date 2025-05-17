@@ -57,8 +57,8 @@ public class InvoiceDTO {
             dto.setPropertyId(invoice.getProperty().getId());
             dto.setPropertyDesignation(invoice.getProperty().getPropertyDesignation());
             
-            if (invoice.getProperty().getOwner() != null) {
-                dto.setOwnerName(invoice.getProperty().getOwner().getName());
+            if (invoice.getProperty().getMainContact() != null) {
+                dto.setOwnerName(invoice.getProperty().getMainContact().getName());
             }
         }
         

@@ -1,0 +1,357 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: erib
+      comment: Import owners and properties with share ratios using SQL and temporary matching tables
+      changes:
+        # Create a temporary table to track owner names to IDs
+        - sql:
+            sql: |
+              CREATE TABLE temp_owner_mapping (
+                name VARCHAR(255) PRIMARY KEY,
+                email VARCHAR(255),
+                owner_id BIGINT
+              );
+
+        # Import owners
+        - sql:
+            sql: |
+              INSERT INTO owners (name, email, phone, address, postal_code, city, created_at) VALUES 
+              ('Anders Collin', 'anders.collin@gmail.com', '46736844130', 'SE', NULL, NULL, now()),
+              ('Anders Drefeldt', 'anders@drefeldt.se', '732680875', 'Råslätt Skår 1', '516 95', 'Målsryd', now()),
+              ('Anders Östberg', 'andersraggan@gmail.com', '070-7219419', 'Fölvägen 32', '425 41', 'Hisings Kärra', now()),
+              ('Arne Jørgen Olafsen', 'ajolafsen@gmail.com', NULL, NULL, NULL, NULL, now()),
+              ('Bertel Enlund', 'bertel.enlund@gmail.com', '031-298244', 'Arkivgatan 5', '411 34', 'Göteborg', now()),
+              ('Birgitta Liljeqvist', 'mikael@liljeqvistdesign.com', '076-8677601', '28 Heimdalsgatan', '261 62', 'GLUMSLÖV', now()),
+              ('Birgitta Palm', NULL, NULL, 'Solskiftesvägen 4', '451 62', 'Uddevalla', now()),
+              ('Birgitta Wastler', 'birgitta_wastler@hotmail.com', '070-5778769', 'Åkersbergsvägen 13', '461 34', 'TROLLHÄTTAN', now()),
+              ('Bo Eek', 'bo.eek@svenskakyrkan.se', '0709-243174', '3 Övre Fogelbergsgatan', '411 28', 'GÖTEBORG', now()),
+              ('Britt Månsson', 'brittmansson123@gmail.com', '031-829271', 'Thorild Wulffsgatan 60', '413 19', 'GÖTEBORG', now()),
+              ('Carolina Nilsson', 'carolina@hpboende.se', NULL, NULL, NULL, NULL, now()),
+              ('Claes Mangelus', 'claesmangelus@hotmail.com', '031-193013', 'Lunnatorpsgatan 12', '412 74', 'GÖTEBORG', now()),
+              ('Elna Holmberg', 'elna.holmberg@gmail.com', '072-3526119', NULL, NULL, NULL, now()),
+              ('Erik Billerby', 'billerby@gmail.com', '0730-825065', 'Kärnvedsgatan 16', '416 80', 'Göteborg', now()),
+              ('Eva Norberg', 'dan.norberg@telia.com', '0521-10207', 'Hästskovägen 19', '462 54', 'VÄNERSBORG', now()),
+              ('Gösta Mellgren', 'gostamellgren@gmail.com', '031-215331', 'Doktor Lindhs Gata 4', '413 25', 'Göteborg', now()),
+              ('Gunnar Törnbom', 'gunnar.tornbom@gmail.com', NULL, NULL, NULL, NULL, now()),
+              ('Henrik Hagberg', 'henrik.hagberg@obgyn.gu.se', NULL, NULL, NULL, NULL, now()),
+              ('Inger Eriksson', 'klamman62@gmail.com', '070-1480240', 'Hvitfeldtsvägen 16', '371 33', 'Skärhamn', now()),
+              ('Ingvar Olemyr', 'igolemyr@gmail.com', '070-1510733', '7 Terrassgatan', '411 33', 'GÖTEBORG', now()),
+              ('Jan Bengtsson', 'jan@bengtsson.net', '46707832130', '18 Askims Urbergsväg', '436 40', 'Askim', now()),
+              ('Jonas Lundberg', 'jonas@dalabygg.eu', '0707-45 45 98', 'Dälavägen 57', '437 36', 'Lindome', now()),
+              ('Kerstin Malm-Tronstad', 'kerstin.tronstad@icloud.com', NULL, NULL, NULL, NULL, now()),
+              ('Lene Schack', 'lene.schack@akzonobel.com', NULL, NULL, NULL, NULL, now()),
+              ('Linda Bruce', 'linda.bruce1@hotmail.com', NULL, NULL, NULL, NULL, now()),
+              ('Lisa Collin', 'lois.collin@gmail.com', '46705681482', NULL, NULL, NULL, now()),
+              ('Lisbet Lefdal', 'lisbet.lefdal@outlook.com', '0702-111315', '25 Sten Sturegatan', '412 52', 'GÖTEBORG', now()),
+              ('Charlotte Hemvik', 'charlotte.hemvik@outlook.com', '0707-773010', NULL, NULL, NULL, now()),
+              ('Magnus Nilsson', 'magnus.nilsson@ncc.se', NULL, NULL, NULL, NULL, now()),
+              ('Mari Wemminger', 'mari@wemminger.se', '0709-54 27 54', 'Torpe Gränd, lgh 1501', '442 47', 'Kungälv', now()),
+              ('Per Arnell', 'per.arnell@saltwater.se', '073-4456129', 'Landshövdingevägen 11', '433 61', 'SÄVEDALEN', now()),
+              ('Per Eskilson', 'per@eskilson.nu', '070-5726202', 'Björkhällan 7', '436 39', 'Askim', now()),
+              ('Per Svending', 'per.svending@gmail.com', NULL, '12 Bokvägen', '442 31', 'Kungälv', now()),
+              ('Per Thorén', 'thoren.per@gmail.com', '0304-666158', 'Gökskullavägen 34', '433 30', 'Öjersjö', now()),
+              ('Pernilla Johansson', 'PernillaMJohansson@hotmail.com', NULL, NULL, NULL, NULL, now()),
+              ('Ragnar Bronäs', 'ragnar@bronas.se', '070-598-4546', 'Mjörn Apelgården 81', '471 73', 'Hjälteby', now()),
+              ('Reidun Liljeros', 'reidunviola@gmail.com', '070-5528960', 'Ingetorp 164 B', '442 96', 'KODE', now()),
+              ('Sigurd Walldal', 'sigurdwalldal@gmail.com', '0304-666365', 'Skårsgatan 36', '412 69', 'GÖTEBORG', now()),
+              ('Tony Johansson', 'tony.1963.johansson@hotmail.com', NULL, NULL, NULL, NULL, now()),
+              ('Elinor Bylynd', NULL, NULL, NULL, NULL, NULL, now());
+
+        # Store owner ids in temporary table
+        - sql:
+            sql: |
+              INSERT INTO temp_owner_mapping (name, email, owner_id)
+              SELECT name, email, id FROM owners;
+
+        # Create a temporary table to track property designations to IDs
+        - sql:
+            sql: |
+              CREATE TABLE temp_property_mapping (
+                property_designation VARCHAR(255) PRIMARY KEY,
+                property_id BIGINT
+              );
+
+        # Import properties with owner references by name
+        - sql:
+            sql: |
+              INSERT INTO properties (property_designation, share_ratio, address, main_contact_id, created_at)
+              SELECT 
+                'Mjörn Apelgården 1:5', 0.593, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Reidun Liljeros'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:15', 1.600, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Arne Jørgen Olafsen'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:18', 2.732, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Charlotte Hemvik'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:21', 3.204, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Claes Mangelus'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:51', 0.593, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Pernilla Johansson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:28', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Collin'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:32', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Magnus Nilsson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:35', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Elinor Bylynd'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:50', 1.355, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Arnell'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:16', 1.355, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Elna Holmberg'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:19', 1.355, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Kerstin Malm-Tronstad'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:22', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Wastler'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:29', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Lisbet Lefdal'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:33', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Ingvar Olemyr'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:36', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Jonas Lundberg'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:14', 1.355, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Palm'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:17', 1.355, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Linda Bruce'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:20', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Gösta Mellgren'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:24', 0.593, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Bertel Enlund'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:30', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Britt Månsson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:34', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Liljeqvist'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:37', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Östberg'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:38', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Thorén'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:40', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Erik Billerby'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:41', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Jan Bengtsson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:44', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Bo Eek'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:47', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Eskilson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:39', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Sigurd Walldal'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:42', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Mari Wemminger'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:45', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Thorén'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:52', 1.888, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Inger Eriksson'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:43', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Gunnar Törnbom'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:46', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Eva Norberg'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:27', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Ragnar Bronäs'), now()
+              UNION ALL SELECT 
+                'Mjörn Apelgården 1:26', 3.640, '', (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Drefeldt'), now();
+
+        # Store property ids in temporary table
+        - sql:
+            sql: |
+              INSERT INTO temp_property_mapping (property_designation, property_id)
+              SELECT property_designation, id FROM properties;
+
+        # Add property owners relationships
+        - sql:
+            sql: |
+              -- Property 1:5 with owner Reidun Liljeros
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:5'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Reidun Liljeros');
+                
+              -- Property 1:15 with owner Arne Jørgen Olafsen  
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:15'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Arne Jørgen Olafsen');
+                
+              -- Property 1:18 with owner Charlotte Hemvik
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:18'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Charlotte Hemvik');
+                
+              -- Property 1:21 with owner Claes Mangelus
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:21'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Claes Mangelus');
+                
+              -- Property 1:51 with owner Pernilla Johansson
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:51'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Pernilla Johansson');
+                
+              -- Property 1:51 with owner Tony Johansson (second owner)
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:51'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Tony Johansson');
+                
+              -- Property 1:28 with owner Anders Collin
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:28'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Collin');
+                
+              -- Property 1:28 with owner Lisa Collin (second owner)
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:28'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Lisa Collin');
+                
+              -- Add remaining single-owner properties
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:32'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Magnus Nilsson');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:35'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Elinor Bylynd');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:50'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Arnell');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:16'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Elna Holmberg');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:19'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Kerstin Malm-Tronstad');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:22'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Wastler');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:29'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Lisbet Lefdal');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:33'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Ingvar Olemyr');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:36'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Jonas Lundberg');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:14'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Palm');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:17'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Linda Bruce');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:20'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Gösta Mellgren');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:24'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Bertel Enlund');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:30'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Britt Månsson');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:34'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Birgitta Liljeqvist');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:37'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Östberg');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:38'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Thorén');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:40'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Erik Billerby');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:41'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Jan Bengtsson');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:44'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Bo Eek');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:47'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Eskilson');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:39'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Sigurd Walldal');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:42'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Mari Wemminger');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:45'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Per Svending');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:52'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Inger Eriksson');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:43'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Gunnar Törnbom');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:46'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Eva Norberg');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:27'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Ragnar Bronäs');
+                
+              INSERT INTO property_owners (property_id, owner_id)
+              SELECT 
+                (SELECT property_id FROM temp_property_mapping WHERE property_designation = 'Mjörn Apelgården 1:26'),
+                (SELECT owner_id FROM temp_owner_mapping WHERE name = 'Anders Drefeldt');
+
+        # Drop temporary tables
+        - sql:
+            sql: |
+              DROP TABLE temp_owner_mapping;
+              DROP TABLE temp_property_mapping;

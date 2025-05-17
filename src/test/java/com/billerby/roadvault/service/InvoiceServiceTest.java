@@ -239,7 +239,11 @@ public class InvoiceServiceTest {
         property.setId(id);
         property.setPropertyDesignation(designation);
         property.setShareRatio(new BigDecimal(shareRatio));
-        property.setOwner(owner);
+        
+        // Add owner to property's owners set
+        property.addOwner(owner);
+        // Set owner as main contact
+        property.setMainContact(owner);
         
         testProperties.add(property);
         expectedAmounts.put(designation, new BigDecimal(expectedAmount));

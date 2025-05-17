@@ -1,6 +1,8 @@
 package com.billerby.roadvault.dto;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * DTO for Property entities.
@@ -11,7 +13,8 @@ public class PropertyDTO {
     private String propertyDesignation;
     private BigDecimal shareRatio;
     private String address;
-    private OwnerDTO owner;
+    private Set<OwnerDTO> owners = new HashSet<>();
+    private OwnerDTO mainContact;
     
     // Default constructor
     public PropertyDTO() {
@@ -59,11 +62,19 @@ public class PropertyDTO {
         this.address = address;
     }
     
-    public OwnerDTO getOwner() {
-        return owner;
+    public Set<OwnerDTO> getOwners() {
+        return owners;
     }
     
-    public void setOwner(OwnerDTO owner) {
-        this.owner = owner;
+    public void setOwners(Set<OwnerDTO> owners) {
+        this.owners = owners;
+    }
+    
+    public OwnerDTO getMainContact() {
+        return mainContact;
+    }
+    
+    public void setMainContact(OwnerDTO mainContact) {
+        this.mainContact = mainContact;
     }
 }

@@ -3,6 +3,8 @@ package com.billerby.roadvault.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity representing a property (fastighet) in the road association.
@@ -30,9 +32,17 @@ public class Property {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private Owner owner;
+    @ManyToMany
+    @JoinTable(
+        name = "property_owners",
+        joinColumns = @JoinColumn(name = "property_id"),
+        inverseJoinColumns = @JoinColumn(name = "owner_id")
+    )
+    private Set<Owner> owners = new HashSet<>();
+    
+    @ManyToOne
+    @JoinColumn(name = "main_contact_id")
+    private Owner mainContact;
 
     // Default constructor required by JPA
     public Property() {
@@ -46,6 +56,37 @@ public class Property {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    // Helper methods
+    
+    public void addOwner(Owner owner) {
+        this.owners.add(owner);
+        owner.getProperties().add(this);
+    }
+    
+    public void removeOwner(Owner owner) {
+        this.owners.remove(owner);
+        owner.getProperties().remove(this);
+        
+        // If the removed owner was the main contact, set main contact to null
+        if (this.mainContact != null && this.mainContact.equals(owner)) {
+            this.mainContact = null;
+        }
+    }
+    
+    /**
+     * Sets the main contact and ensures the owner is in the owners set.
+     *
+     * @param owner The owner to set as main contact
+     */
+    public void setMainContactWithCheck(Owner owner) {
+        // Ensure the owner is in the owners set
+        if (owner != null && !this.owners.contains(owner)) {
+            addOwner(owner);
+        }
+        
+        this.mainContact = owner;
     }
 
     // Getters and Setters
@@ -98,12 +139,20 @@ public class Property {
         this.updatedAt = updatedAt;
     }
 
-    public Owner getOwner() {
-        return owner;
+    public Set<Owner> getOwners() {
+        return owners;
     }
 
-    public void setOwner(Owner owner) {
-        this.owner = owner;
+    public void setOwners(Set<Owner> owners) {
+        this.owners = owners;
+    }
+    
+    public Owner getMainContact() {
+        return mainContact;
+    }
+
+    public void setMainContact(Owner mainContact) {
+        this.mainContact = mainContact;
     }
 
     @Override

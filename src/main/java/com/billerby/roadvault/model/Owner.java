@@ -25,7 +25,7 @@ public class Owner {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "address", nullable = false)
+    @Column(name = "address")
     private String address;
 
     @Column(name = "postal_code")
@@ -40,7 +40,7 @@ public class Owner {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "owners")
     private Set<Property> properties = new HashSet<>();
 
     // Default constructor required by JPA
@@ -55,18 +55,6 @@ public class Owner {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    // Helper method to add property
-    public void addProperty(Property property) {
-        properties.add(property);
-        property.setOwner(this);
-    }
-
-    // Helper method to remove property
-    public void removeProperty(Property property) {
-        properties.remove(property);
-        property.setOwner(null);
     }
 
     // Getters and Setters
