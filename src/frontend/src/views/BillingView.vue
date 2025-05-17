@@ -827,4 +827,60 @@ export default {
   transform: translateY(0);
   
 }
+
+.divisor {
+  display: inline-block;
+  width: 100%;
+  height: 1px;
+  background-color: black; /* Eller en annan färg som passar designen */
+  margin: 4px 0; /* Justera avståndet om det behövs */
+  vertical-align: middle;
+}
+.formula-container {
+  text-align: center;
+  margin: 16px 0;
+}
+
+.fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.numerator {
+  font-weight: bold;
+}
+
+.denominator {
+  font-weight: bold;
+  border-top: 1px solid black;
+  margin-top: 4px;
+}
+
+.pa-golden {
+  padding: 16px; /* Justera efter behov */
+}
+
+.mb-golden {
+  margin-bottom: 16px; /* Justera efter behov */
+}
+
+.custom-table {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.empty-state {
+  color: grey;
+  font-size: 14px;
+}
+
+.dialog-card {
+  padding: 16px;
+}
+
+.dialog-title {
+  font-weight: bold;
+  font-size: 18px;
+}
 </style>
