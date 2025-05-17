@@ -7,6 +7,8 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import PropertiesView from '../views/PropertiesView.vue';
 import PropertyView from '../views/PropertyView.vue';
+import BillingView from '../views/BillingView.vue';
+import AssociationView from '../views/AssociationView.vue';
 
 const routes = [
   {
@@ -31,6 +33,30 @@ const routes = [
     name: 'property-view',
     component: PropertyView,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/billings',
+    name: 'billings',
+    component: BillingView,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/billings/:id',
+    name: 'billing-view',
+    component: BillingView,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/billings/:id/invoices',
+    name: 'billing-invoices',
+    component: BillingView,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/association',
+    name: 'association',
+    component: AssociationView,
+    meta: { requiresAuth: true, requiresAdmin: true }
   }
 ];
 
@@ -42,10 +68,14 @@ const router = createRouter({
 // Navigation guard för att skydda routes
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
   const isAuthenticated = authService.isAuthenticated();
+  const isAdmin = authService.hasRole('ADMIN');
 
   if (requiresAuth && !isAuthenticated) {
     next('/login');
+  } else if (requiresAdmin && !isAdmin) {
+    next('/'); // Redirect to home if user is not admin but tries to access admin page
   } else {
     next();
   }

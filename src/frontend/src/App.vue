@@ -83,6 +83,17 @@
         
         <v-list-item 
           v-if="hasRole('ADMIN')"
+          to="/billings"
+          :active="$route.path.startsWith('/billings')"
+          color="primary"
+          prepend-icon="mdi-cash-multiple"
+          title="Utdebiteringar"
+          rounded="lg"
+          class="my-1"
+        ></v-list-item>
+        
+        <v-list-item 
+          v-if="hasRole('ADMIN')"
           prepend-icon="mdi-file-document-multiple"
           title="Fakturor"
           rounded="lg"
@@ -91,8 +102,21 @@
         
         <v-list-item 
           v-if="hasRole('ADMIN')"
-          prepend-icon="mdi-cash-multiple"
+          prepend-icon="mdi-cash-register"
           title="Betalningar"
+          rounded="lg"
+          class="my-1"
+        ></v-list-item>
+
+        <v-divider class="my-2"></v-divider>
+
+        <v-list-item 
+          v-if="hasRole('ADMIN')"
+          to="/association"
+          :active="$route.path === '/association'"
+          color="primary"
+          prepend-icon="mdi-domain"
+          title="Föreningsuppgifter"
           rounded="lg"
           class="my-1"
         ></v-list-item>

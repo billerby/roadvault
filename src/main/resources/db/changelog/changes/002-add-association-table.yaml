@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: erib
+      changes:
+        - createTable:
+            tableName: associations
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: organization_number
+                  type: varchar(50)
+              - column:
+                  name: bankgiro_number
+                  type: varchar(20)
+              - column:
+                  name: plusgiro_number
+                  type: varchar(20)
+              - column:
+                  name: email
+                  type: varchar(255)
+              - column:
+                  name: phone
+                  type: varchar(50)
+              - column:
+                  name: address
+                  type: varchar(255)
+              - column:
+                  name: postal_code
+                  type: varchar(20)
+              - column:
+                  name: city
+                  type: varchar(100)
+              - column:
+                  name: website
+                  type: varchar(255)
+              - column:
+                  name: invoice_text
+                  type: varchar(1000)
+              - column:
+                  name: reminder_days
+                  type: int
+              - column:
+                  name: reminder_fee
+                  type: decimal(10,2)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueDate: now()
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
