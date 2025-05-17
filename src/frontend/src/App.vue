@@ -53,8 +53,8 @@
     >
       <v-list-item
         prepend-avatar="https://ui-avatars.com/api/?name=Admin&background=2E7D32&color=fff"
-        :title="getCurrentUser().username"
-        :subtitle="getCurrentUser().email"
+        :title="getCurrentUser() ? getCurrentUser().username : 'Användare'"
+        :subtitle="getCurrentUser() ? getCurrentUser().email : 'Ingen inloggad'"
         class="py-4 primary lighten-4"
       ></v-list-item>
       

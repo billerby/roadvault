@@ -2,4 +2,8 @@ databaseChangeLog:
   - include:
       file: classpath:db/changelog/changes/001-initial-schema.yaml
   - include:
+      file: classpath:db/changelog/changes/02-multiple-owners-per-property.yaml
+  - include:
       file: classpath:db/changelog/changes/002-add-association-table.yaml
+  - include:
+      file: classpath:db/changelog/changes/03-import-owners-properties.yaml
