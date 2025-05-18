@@ -1,0 +1,34 @@
+.small-badge.partial-payment {
+  background-color: #FFC107;
+  color: white;
+}
+
+.overdue-date {
+  color: #F44336;
+  font-weight: 500;
+}
+
+/* Dialog styling */
+.dialog-card {
+  border-radius: 8px;
+}
+
+.dialog-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Spacing utilities */
+.pa-golden {
+  padding: 20px;
+}
+
+.mb-golden {
+  margin-bottom: 24px;
+}
+
+/* Empty state */
+.empty-state {
+  color: #666;
+  padding: 40px 0;
+}

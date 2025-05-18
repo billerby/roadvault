@@ -94,6 +94,9 @@
         
         <v-list-item 
           v-if="hasRole('ADMIN')"
+          to="/invoices"
+          :active="$route.path.startsWith('/invoices')"
+          color="primary"
           prepend-icon="mdi-file-document-multiple"
           title="Fakturor"
           rounded="lg"

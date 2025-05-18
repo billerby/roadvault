@@ -9,6 +9,7 @@ import PropertiesView from '../views/PropertiesView.vue';
 import PropertyView from '../views/PropertyView.vue';
 import BillingView from '../views/BillingView.vue';
 import AssociationView from '../views/AssociationView.vue';
+import InvoiceManagementView from '../views/InvoiceManagementView.vue';
 
 const routes = [
   {
@@ -57,6 +58,18 @@ const routes = [
     name: 'association',
     component: AssociationView,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/invoices',
+    name: 'invoices',
+    component: InvoiceManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/invoices/:id',
+    name: 'invoice-view',
+    component: InvoiceManagementView,
+    meta: { requiresAuth: true }
   }
 ];
 

@@ -790,6 +790,7 @@ export default {
 
 /* Primära åtgärdsknappar */
 .primary-action-btn {
+  /* Keep existing properties */
   height: 42px;
   border-radius: var(--button-border-radius) !important;
   padding: 0 24px !important;
@@ -800,6 +801,13 @@ export default {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease !important;
+  
+  /* Add these properties for better text clarity */
+  color: white !important; /* Assuming a dark button background */
+  font-size: 16px !important; /* Increase font size */
+  font-weight: 600 !important; /* Make text bolder */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important; /* Add subtle text shadow for better contrast */
+  line-height: 42px !important; /* Center text vertically */
 }
 
 .primary-action-btn::before {
