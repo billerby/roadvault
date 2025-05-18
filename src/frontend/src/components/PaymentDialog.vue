@@ -54,7 +54,8 @@
             
             <v-col cols="12" sm="6">
               <v-date-input
-                v-model="payment.paymentDate"
+                v-model="paymentDate"
+                :display-format="formatDateISO"
                 label="Betalningsdatum"
                 locale="sv-SE"
                 required
@@ -151,228 +152,245 @@
   </v-dialog>
 </template>
 
-<script>
-import { defineComponent } from 'vue';
-import { format } from 'date-fns';
+<script setup>
+import { ref, computed, watch, toRefs, onMounted, shallowRef } from 'vue';
+import { useDate } from 'vuetify';
 import invoiceService from '../services/invoice.service';
-import { VDateInput } from 'vuetify/labs/VDateInput'
+import { VDateInput } from 'vuetify/labs/VDateInput';
 
-export default defineComponent({
-  name: 'PaymentDialog',
-  components: {
-    VDateInput
+// Initialize date adapter
+const adapter = useDate();
+
+const props = defineProps({
+  // Whether the dialog is visible
+  visible: {
+    type: Boolean,
+    default: false
   },
   
-  props: {
-    // Whether the dialog is visible
-    visible: {
-      type: Boolean,
-      default: false
-    },
-    
-    // Invoice to register payment for
-    invoice: {
-      type: Object,
-      required: true
-    },
-    
-    // Payment data if editing an existing payment
-    editingPayment: {
-      type: Object,
-      default: null
-    },
-    
-    // Total amount already paid for this invoice (excluding edited payment)
-    paidAmount: {
-      type: Number,
-      default: 0
-    }
+  // Invoice to register payment for
+  invoice: {
+    type: Object,
+    required: true
   },
   
-  data() {
-    return {
-      // Payment form
-      validPaymentForm: true,
-      savingPayment: false,
-      
-      // Payment data
-      payment: this.getDefaultPayment(),
-      
-      // Payment types
-      paymentTypes: [
-        { value: 'BANKGIRO', label: 'Bankgiro' },
-        { value: 'POSTGIRO', label: 'Postgiro' },
-        { value: 'SWISH', label: 'Swish' },
-        { value: 'MANUAL', label: 'Manuell' },
-        { value: 'OTHER', label: 'Annan' }
-      ]
-    };
+  // Payment data if editing an existing payment
+  editingPayment: {
+    type: Object,
+    default: null
   },
   
-  computed: {
-    // Control dialog visibility with prop
-    dialogVisible: {
-      get() {
-        return this.visible;
-      },
-      set(value) {
-        if (!value) {
-          this.$emit('update:visible', false);
-        }
-      }
-    },
-    
-    // Calculate remaining amount to be paid for this invoice
-    getRemainingAmount() {
-      if (!this.invoice) return 0;
-      
-      const amount = parseFloat(this.invoice.amount) || 0;
-      const paidAmount = this.paidAmount;
-      
-      // If editing a payment, exclude it from the paid amount
-      if (this.editingPayment) {
-        const editingAmount = parseFloat(this.editingPayment.amount) || 0;
-        return amount - paidAmount + editingAmount;
-      }
-      
-      return amount - paidAmount;
-    },
-    
-    // Calculate remaining amount after this payment
-    remainingAfterPayment() {
-      if (!this.invoice || !this.payment.amount) return 0;
-      
-      const currentPaidAmount = this.paidAmount;
-      const paymentAmount = parseFloat(this.payment.amount) || 0;
-      
-      // If editing a payment, exclude it from the paid amount
-      if (this.editingPayment) {
-        const editingAmount = parseFloat(this.editingPayment.amount) || 0;
-        return this.invoice.amount - (currentPaidAmount - editingAmount + paymentAmount);
-      }
-      
-      return this.invoice.amount - (currentPaidAmount + paymentAmount);
-    }
-  },
-  
-  watch: {
-    // Update payment data when visible changes
-    visible(newValue) {
-      if (newValue) {
-        this.initializePayment();
-      }
-    },
-    
-    // Update payment data when editing payment changes
-    editingPayment(newValue) {
-      if (newValue) {
-        this.initializePayment();
-      }
-    }
-  },
-  
-  mounted() {
-    this.initializePayment();
-  },
-  
-  methods: {
-    // Get default payment data
-    getDefaultPayment() {
-      // Use ISO format YYYY-MM-DD which is compatible with v-date-input
-      return {
-        amount: null,
-        paymentDate: new Date().toISOString().split('T')[0], 
-        paymentType: 'BANKGIRO',
-        comment: ''
-      };
-    },
-    
-    // Set payment date to today
-    setPaymentDateToday() {
-      this.payment.paymentDate = new Date().toISOString().split('T')[0];
-    },
-    
-    // Initialize payment data
-    initializePayment() {
-      // If editing an existing payment
-      if (this.editingPayment) {
-        this.payment = {
-          id: this.editingPayment.id,
-          amount: this.editingPayment.amount,
-          paymentDate: this.editingPayment.paymentDate,
-          paymentType: this.editingPayment.paymentType,
-          comment: this.editingPayment.comment
-        };
-      } else {
-        // New payment
-        this.payment = this.getDefaultPayment();
-        
-        // Default to remaining amount
-        if (this.invoice) {
-          if (this.invoice.status === 'PARTIALLY_PAID') {
-            this.payment.amount = this.getRemainingAmount;
-          } else {
-            this.payment.amount = this.invoice.amount;
-          }
-        }
-      }
-    },
-    
-    // Close dialog
-    closeDialog() {
-      this.$refs.paymentForm.reset();
-      this.payment = this.getDefaultPayment();
-      this.$emit('update:visible', false);
-      this.$emit('close');
-    },
-    
-    // Save payment
-    async savePayment() {
-      if (!this.$refs.paymentForm.validate()) return;
-      
-      this.savingPayment = true;
-      
-      try {
-        const paymentData = {
-          amount: parseFloat(this.payment.amount),
-          paymentDate: this.payment.paymentDate,
-          paymentType: this.payment.paymentType,
-          comment: this.payment.comment
-        };
-        
-        let response;
-        
-        // Update existing payment or create new one
-        if (this.editingPayment) {
-          response = await invoiceService.updatePayment(this.editingPayment.id, paymentData);
-          this.$emit('payment-updated', response.data);
-        } else {
-          response = await invoiceService.registerPayment(this.invoice.id, paymentData);
-          this.$emit('payment-created', response.data);
-        }
-        
-        this.closeDialog();
-      } catch (error) {
-        console.error('Error saving payment:', error);
-        this.$emit('error', error);
-      } finally {
-        this.savingPayment = false;
-      }
-    },
-    
-    // Format currency for display
-    formatCurrency(value) {
-      if (value === null || value === undefined) return '0 kr';
-      
-      return new Intl.NumberFormat('sv-SE', {
-        style: 'currency',
-        currency: 'SEK',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(value);
+  // Total amount already paid for this invoice (excluding edited payment)
+  paidAmount: {
+    type: Number,
+    default: 0
+  }
+});
+
+const emit = defineEmits(['update:visible', 'close', 'payment-created', 'payment-updated', 'error']);
+
+// Refs and state
+const paymentForm = ref(null);
+const validPaymentForm = ref(true);
+const savingPayment = ref(false);
+const paymentDate = shallowRef(adapter.date(new Date()));
+
+// Payment data
+const payment = ref({
+  amount: null,
+  paymentDate: adapter.toISO(adapter.date(new Date())), // Initially set to today's date in ISO format
+  paymentType: 'BANKGIRO',
+  comment: ''
+});
+
+// Payment types
+const paymentTypes = [
+  { value: 'BANKGIRO', label: 'Bankgiro' },
+  { value: 'POSTGIRO', label: 'Postgiro' },
+  { value: 'SWISH', label: 'Swish' },
+  { value: 'MANUAL', label: 'Manuell' },
+  { value: 'OTHER', label: 'Annan' }
+];
+
+// Destructure props for reactivity
+const { visible, invoice, editingPayment, paidAmount } = toRefs(props);
+
+// Control dialog visibility with prop
+const dialogVisible = computed({
+  get: () => visible.value,
+  set: (value) => {
+    if (!value) {
+      emit('update:visible', false);
     }
   }
 });
+
+// Calculate remaining amount to be paid for this invoice
+const getRemainingAmount = computed(() => {
+  if (!invoice.value) return 0;
+  
+  const amount = parseFloat(invoice.value.amount) || 0;
+  const paid = paidAmount.value;
+  
+  // If editing a payment, exclude it from the paid amount
+  if (editingPayment.value) {
+    const editingAmount = parseFloat(editingPayment.value.amount) || 0;
+    return amount - paid + editingAmount;
+  }
+  
+  return amount - paid;
+});
+
+// Calculate remaining amount after this payment
+const remainingAfterPayment = computed(() => {
+  if (!invoice.value || !payment.value.amount) return 0;
+  
+  const currentPaidAmount = paidAmount.value;
+  const paymentAmount = parseFloat(payment.value.amount) || 0;
+  
+  // If editing a payment, exclude it from the paid amount
+  if (editingPayment.value) {
+    const editingAmount = parseFloat(editingPayment.value.amount) || 0;
+    return invoice.value.amount - (currentPaidAmount - editingAmount + paymentAmount);
+  }
+  
+  return invoice.value.amount - (currentPaidAmount + paymentAmount);
+});
+
+// Format the date to ISO format for display
+function formatDateISO(date) {
+  if (!date) return '';
+  return adapter.toISO(date);
+}
+
+// Watch for changes to initialize payment
+watch(visible, (newValue) => {
+  if (newValue) {
+    initializePayment();
+  }
+});
+
+watch(editingPayment, (newValue) => {
+  if (newValue) {
+    initializePayment();
+  }
+});
+
+// Watch for changes in the date
+watch(paymentDate, (newValue) => {
+  if (newValue) {
+    // Update the ISO formatted date in payment
+    payment.value.paymentDate = adapter.toISO(newValue);
+  }
+});
+
+// Initialize component
+onMounted(() => {
+  initializePayment();
+});
+
+// Set payment date to today
+function setPaymentDateToday() {
+  paymentDate.value = adapter.date(new Date());
+}
+
+// Initialize payment data
+function initializePayment() {
+  // If editing an existing payment
+  if (editingPayment.value) {
+    payment.value = {
+      id: editingPayment.value.id,
+      amount: editingPayment.value.amount,
+      paymentDate: editingPayment.value.paymentDate, // Keep the original ISO string
+      paymentType: editingPayment.value.paymentType,
+      comment: editingPayment.value.comment
+    };
+    
+    // Parse the ISO date for the date picker
+    if (editingPayment.value.paymentDate) {
+      paymentDate.value = adapter.parseISO(editingPayment.value.paymentDate);
+    } else {
+      paymentDate.value = adapter.date(new Date());
+    }
+  } else {
+    // Set today's date
+    paymentDate.value = adapter.date(new Date());
+    
+    // New payment
+    payment.value = {
+      amount: null,
+      paymentDate: adapter.toISO(paymentDate.value),
+      paymentType: 'BANKGIRO',
+      comment: ''
+    };
+    
+    // Default to remaining amount
+    if (invoice.value) {
+      if (invoice.value.status === 'PARTIALLY_PAID') {
+        payment.value.amount = getRemainingAmount.value;
+      } else {
+        payment.value.amount = invoice.value.amount;
+      }
+    }
+  }
+}
+
+// Close dialog
+function closeDialog() {
+  if (paymentForm.value) {
+    paymentForm.value.reset();
+  }
+  
+  initializePayment();
+  emit('update:visible', false);
+  emit('close');
+}
+
+// Save payment
+async function savePayment() {
+  if (paymentForm.value && !paymentForm.value.validate()) return;
+  
+  savingPayment.value = true;
+  
+  try {
+    const paymentData = {
+      amount: parseFloat(payment.value.amount),
+      paymentDate: payment.value.paymentDate, // Should be in ISO format
+      paymentType: payment.value.paymentType,
+      comment: payment.value.comment
+    };
+    
+    let response;
+    
+    // Update existing payment or create new one
+    if (editingPayment.value) {
+      response = await invoiceService.updatePayment(editingPayment.value.id, paymentData);
+      emit('payment-updated', response.data);
+    } else {
+      response = await invoiceService.registerPayment(invoice.value.id, paymentData);
+      emit('payment-created', response.data);
+    }
+    
+    closeDialog();
+  } catch (error) {
+    console.error('Error saving payment:', error);
+    emit('error', error);
+  } finally {
+    savingPayment.value = false;
+  }
+}
+
+// Format currency for display
+function formatCurrency(value) {
+  if (value === null || value === undefined) return '0 kr';
+  
+  return new Intl.NumberFormat('sv-SE', {
+    style: 'currency',
+    currency: 'SEK',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
+}
 </script>
 
 <style scoped>
