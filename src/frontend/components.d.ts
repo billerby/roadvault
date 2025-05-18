@@ -11,6 +11,7 @@ declare module 'vue' {
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     LoginForm: typeof import('./src/components/LoginForm.vue')['default']
     OwnerForm: typeof import('./src/components/OwnerForm.vue')['default']
+    PaymentDialog: typeof import('./src/components/PaymentDialog.vue')['default']
     PropertyForm: typeof import('./src/components/PropertyForm.vue')['default']
     PropertyList: typeof import('./src/components/PropertyList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

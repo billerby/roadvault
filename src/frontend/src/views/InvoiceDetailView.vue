@@ -395,158 +395,18 @@
       </div>
     </v-card>
 
-    <!-- Dialog for Payment Registration -->
-    <v-dialog v-model="paymentDialog" max-width="600px">
-      <v-card class="dialog-card">
-        <v-card-title class="text-h5 dialog-title">
-          <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-cash-plus</v-icon>
-          Registrera betalning
-        </v-card-title>
-        <v-divider></v-divider>
-        
-        <v-card-text class="pa-golden">
-          <v-form ref="paymentForm" v-model="validPaymentForm" lazy-validation>
-            <div v-if="invoice" class="mb-4">
-              <div class="d-flex justify-space-between mb-2">
-                <span class="subtitle-2">Faktura:</span>
-                <span class="font-weight-medium">{{ invoice.invoiceNumber }}</span>
-              </div>
-              <div class="d-flex justify-space-between mb-2">
-                <span class="subtitle-2">Fastighet:</span>
-                <span>{{ invoice.propertyDesignation }}</span>
-              </div>
-              <div class="d-flex justify-space-between mb-2">
-                <span class="subtitle-2">Ägare:</span>
-                <span>{{ invoice.ownerName }}</span>
-              </div>
-              <div class="d-flex justify-space-between mb-2">
-                <span class="subtitle-2">Fakturabelopp:</span>
-                <span class="font-weight-medium">{{ formatCurrency(invoice.amount) }}</span>
-              </div>
-              <div class="d-flex justify-space-between mb-2">
-                <span class="subtitle-2">Återstående att betala:</span>
-                <span class="font-weight-medium error--text">{{ formatCurrency(getRemainingAmount()) }}</span>
-              </div>
-            </div>
-            
-            <v-divider class="mb-4"></v-divider>
-            
-            <v-row>
-              <v-col cols="12" sm="6">
-                <v-text-field
-                  v-model="payment.amount"
-                  label="Belopp"
-                  type="number"
-                  required
-                  :rules="[
-                    v => !!v || 'Belopp är obligatoriskt',
-                    v => v > 0 || 'Belopp måste vara större än 0',
-                  ]"
-                  prefix="SEK"
-                  hint="Betalt belopp"
-                  outlined
-                  dense
-                ></v-text-field>
-              </v-col>
-              
-              <v-col cols="12" sm="6">
-                <v-menu
-                  v-model="paymentDateMenu"
-                  :close-on-content-click="false"
-                  transition="scale-transition"
-                  offset-y
-                  min-width="290px"
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-text-field
-                      v-model="formattedPaymentDate"
-                      label="Betalningsdatum"
-                      readonly
-                      outlined
-                      dense
-                      v-bind="props"
-                      required
-                      :rules="[v => !!v || 'Betalningsdatum är obligatoriskt']"
-                    ></v-text-field>
-                  </template>
-                  <v-date-picker
-                    v-model="payment.paymentDate"
-                    @input="paymentDateMenu = false"
-                    locale="sv-SE"
-                  ></v-date-picker>
-                </v-menu>
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12">
-                <v-select
-                  v-model="payment.paymentType"
-                  label="Betalningssätt"
-                  :items="paymentTypes"
-                  item-title="label"
-                  item-value="value"
-                  required
-                  :rules="[v => !!v || 'Betalningssätt är obligatoriskt']"
-                  hint="Välj hur betalningen gjordes"
-                  outlined
-                  dense
-                ></v-select>
-              </v-col>
-            </v-row>
-            
-            <v-row>
-              <v-col cols="12">
-                <v-textarea
-                  v-model="payment.comment"
-                  label="Kommentar"
-                  hint="Valfri kommentar om betalningen"
-                  outlined
-                  dense
-                  rows="3"
-                ></v-textarea>
-              </v-col>
-            </v-row>
-            
-            <v-alert
-              v-if="remainingAfterPayment < 0"
-              type="warning"
-              outlined
-              dense
-              class="mt-4"
-            >
-              Inbetalningen är {{ formatCurrency(Math.abs(remainingAfterPayment)) }} högre än fakturabeloppet.
-            </v-alert>
-          </v-form>
-        </v-card-text>
-        
-        <v-divider></v-divider>
-        
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            variant="outlined"
-            color="grey-darken-1"
-            @click="closePaymentDialog"
-            class="me-4"
-          >
-            Avbryt
-          </v-btn>
-          <v-btn
-            color="primary"
-            variant="elevated"
-            :disabled="!validPaymentForm"
-            @click="savePayment"
-            :loading="savingPayment"
-            elevation="2"
-          >
-            <v-icon start>mdi-content-save</v-icon>
-            Registrera betalning
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
+    <payment-dialog
+        v-if="invoice"
+        v-model="paymentDialog"
+        :invoice="invoice"
+        :remaining-amount="getRemainingAmount()"
+        :saving="savingPayment"
+        :default-payment="getDefaultPayment()"
+        @payment-created="onPaymentChanged"
+        @payment-updated="onPaymentChanged"
+        @close="closePaymentDialog"
+    />
+   
     <!-- Dialog for Delete Payment Confirmation -->
     <v-dialog v-model="deletePaymentDialog" max-width="500px">
       <v-card>
@@ -663,6 +523,7 @@ import { defineComponent } from 'vue';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import invoiceService from '../services/invoice.service';
+import PaymentDialog from '../components/PaymentDialog.vue';
 
 // Import PdfViewer placeholder component - this will be replaced later with a real PDF viewer component
 const PdfViewer = {
@@ -677,7 +538,8 @@ const PdfViewer = {
 export default defineComponent({
   name: 'InvoiceDetailView',
   components: {
-    PdfViewer
+    PdfViewer,
+    PaymentDialog
   },
 
   data() {
@@ -703,10 +565,8 @@ export default defineComponent({
       
       // Payment dialog
       paymentDialog: false,
-      paymentDateMenu: false,
-      validPaymentForm: true,
       savingPayment: false,
-      payment: this.getDefaultPayment(),
+
       
       // Delete payment dialog
       deletePaymentDialog: false,
@@ -1061,6 +921,10 @@ export default defineComponent({
       
       this.paymentDialog = true;
     },
+    onPaymentChanged() {
+        this.fetchInvoice();
+        this.fetchInvoicePayments();
+    },
     
     closePaymentDialog() {
       this.paymentDialog = false;
@@ -1069,44 +933,6 @@ export default defineComponent({
       if (this.$refs.paymentForm) {
         this.$refs.paymentForm.reset();
       }
-    },
-    
-    async savePayment() {
-      if (!this.$refs.paymentForm.validate()) return;
-      
-      this.savingPayment = true;
-      
-      try {
-        await invoiceService.registerPayment(this.invoice.id, {
-          amount: parseFloat(this.payment.amount),
-          paymentDate: this.payment.paymentDate,
-          paymentType: this.payment.paymentType,
-          comment: this.payment.comment
-        });
-        
-        this.showSnackbar('Betalning har registrerats', 'success');
-        this.closePaymentDialog();
-        
-        // Refresh invoice and payments
-        this.fetchInvoice();
-      } catch (error) {
-        console.error('Error registering payment:', error);
-        this.showSnackbar('Kunde inte registrera betalning', 'error');
-      } finally {
-        this.savingPayment = false;
-      }
-    },
-    
-    editPayment(payment) {
-      this.payment = {
-        id: payment.id,
-        amount: payment.amount,
-        paymentDate: payment.paymentDate,
-        paymentType: payment.paymentType,
-        comment: payment.comment
-      };
-      
-      this.paymentDialog = true;
     },
     
     confirmDeletePayment(payment) {
