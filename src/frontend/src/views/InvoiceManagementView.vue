@@ -596,7 +596,7 @@ export default {
       // Payment types
       paymentTypes: [
         { value: 'BANKGIRO', label: 'Bankgiro' },
-        { value: 'POSTGIRO', label: 'Postgiro' },
+         { value: 'PLUSGIRO', label: 'Plusgiro' },
         { value: 'SWISH', label: 'Swish' },
         { value: 'MANUAL', label: 'Manuell' },
         { value: 'OTHER', label: 'Annan' }
@@ -982,7 +982,7 @@ export default {
       switch (type) {
         case 'BANKGIRO':
           return 'var(--color-primary-light)';
-        case 'POSTGIRO':
+        case 'PLUSGIRO':
           return 'var(--color-primary-dark)';
         case 'SWISH':
           return 'var(--color-accent-light)';

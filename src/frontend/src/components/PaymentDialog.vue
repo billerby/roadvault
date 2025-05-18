@@ -206,8 +206,8 @@ const payment = ref({
 
 // Payment types
 const paymentTypes = [
+  { value: 'PLUSGIRO', label: 'Plusgiro' },
   { value: 'BANKGIRO', label: 'Bankgiro' },
-  { value: 'POSTGIRO', label: 'Postgiro' },
   { value: 'SWISH', label: 'Swish' },
   { value: 'MANUAL', label: 'Manuell' },
   { value: 'OTHER', label: 'Annan' }

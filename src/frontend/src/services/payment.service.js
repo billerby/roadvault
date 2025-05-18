@@ -33,7 +33,7 @@ class PaymentService {
 
   /**
    * Get payments by type
-   * @param {string} type Payment type (BANKGIRO, POSTGIRO, SWISH, MANUAL, OTHER)
+   * @param {string} type Payment type (BANKGIRO, PLUSGIRO, SWISH, MANUAL, OTHER)
    * @returns {Promise} Promise with payments of the specified type
    */
   getPaymentsByType(type) {

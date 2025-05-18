@@ -41,7 +41,7 @@ public class Payment {
 
     // Enum for payment types
     public enum PaymentType {
-        POSTGIRO,
+        PLUSGIRO,
         BANKGIRO,
         SWISH,
         MANUAL,
