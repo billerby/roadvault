@@ -79,11 +79,10 @@
             <div class="amount-column">
               <span class="font-weight-medium">{{ formatCurrency(item.amount) }}</span>
               <v-tooltip bottom v-if="getPaymentStatus(item) === 'PARTIALLY_PAID'">
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <div 
                     class="small-badge partial-payment" 
-                    v-bind="attrs" 
-                    v-on="on"
+                    v-bind="props" 
                   >
                     {{ calculatePaidPercentage(item) }}%
                   </div>
@@ -98,12 +97,11 @@
             <div :class="{ 'overdue-date': isOverdue(item) }">
               {{ formatDate(item.dueDate) }}
               <v-tooltip bottom v-if="isOverdue(item)">
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-icon 
                     small 
                     color="error"
-                    v-bind="attrs" 
-                    v-on="on"
+                    v-bind="props" 
                   >
                     mdi-alert-circle
                   </v-icon>
@@ -129,12 +127,14 @@
           <template v-slot:item.actions="{ item }">
             <div class="actions-container">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="table-action-btn view-action mr-1"
+                    class="action-btn-rounded mr-1"
+                    color="primary"
+                    icon
+                    small
+                    v-bind="props" 
                     @click="viewInvoice(item)"
-                    v-bind="attrs" 
-                    v-on="on"
                   >
                     <v-icon small>mdi-eye</v-icon>
                   </v-btn>
@@ -143,13 +143,15 @@
               </v-tooltip>
               
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="table-action-btn payment-action mr-1"
-                    @click="openPaymentDialog(item)"
-                    v-bind="attrs" 
-                    v-on="on"
+                    class="action-btn-rounded mr-1"
+                    color="accent"
+                    icon
+                    small
+                    v-bind="props" 
                     :disabled="getPaymentStatus(item) === 'PAID'"
+                    @click="openPaymentDialog(item)"
                   >
                     <v-icon small>mdi-cash-plus</v-icon>
                   </v-btn>
@@ -158,13 +160,15 @@
               </v-tooltip>
               
               <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
+                <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="table-action-btn payment-history-action"
-                    @click="openPaymentHistoryDialog(item)"
-                    v-bind="attrs" 
-                    v-on="on"
+                    class="action-btn-rounded"
+                    color="secondary"
+                    icon
+                    small
+                    v-bind="props" 
                     :disabled="!hasPayments(item)"
+                    @click="openPaymentHistoryDialog(item)"
                   >
                     <v-icon small>mdi-history</v-icon>
                   </v-btn>
@@ -262,39 +266,39 @@
             </div>
             <v-list dense>
               <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>Totalt fakturerat belopp</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action class="font-weight-medium">
-                  {{ formatCurrency(statistics.totalAmount) }}
-                </v-list-item-action>
+                <v-list-item-title>Totalt fakturerat belopp</v-list-item-title>
+                <template v-slot:append>
+                  <div class="font-weight-medium">
+                    {{ formatCurrency(statistics.totalAmount) }}
+                  </div>
+                </template>
               </v-list-item>
               
               <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>Totalt inbetalt</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action class="font-weight-medium success--text">
-                  {{ formatCurrency(statistics.paidAmount) }}
-                </v-list-item-action>
+                <v-list-item-title>Totalt inbetalt</v-list-item-title>
+                <template v-slot:append>
+                  <div class="font-weight-medium text-success">
+                    {{ formatCurrency(statistics.paidAmount) }}
+                  </div>
+                </template>
               </v-list-item>
               
               <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>Återstående att betala</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action class="font-weight-medium warning--text">
-                  {{ formatCurrency(statistics.unpaidAmount) }}
-                </v-list-item-action>
+                <v-list-item-title>Återstående att betala</v-list-item-title>
+                <template v-slot:append>
+                  <div class="font-weight-medium text-warning">
+                    {{ formatCurrency(statistics.unpaidAmount) }}
+                  </div>
+                </template>
               </v-list-item>
-              
+                            
               <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>Förfallna belopp</v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action class="font-weight-medium error--text">
-                  {{ formatCurrency(statistics.overdueAmount) }}
-                </v-list-item-action>
+                <v-list-item-title>Förfallna belopp</v-list-item-title>
+                <template v-slot:append>
+                  <div class="font-weight-medium text-error">
+                    {{ formatCurrency(statistics.overdueAmount) }}
+                  </div>
+                </template>
               </v-list-item>
             </v-list>
           </v-col>
@@ -399,15 +403,14 @@
                   offset-y
                   min-width="290px"
                 >
-                  <template v-slot:activator="{ on, attrs }">
+                  <template v-slot:activator="{ props }">
                     <v-text-field
                       v-model="formattedPaymentDate"
                       label="Betalningsdatum"
                       readonly
                       outlined
                       dense
-                      v-bind="attrs"
-                      v-on="on"
+                      v-bind="props"
                       required
                       :rules="[v => !!v || 'Betalningsdatum är obligatoriskt']"
                     ></v-text-field>
@@ -427,7 +430,7 @@
                   v-model="payment.paymentType"
                   label="Betalningssätt"
                   :items="paymentTypes"
-                  item-text="label"
+                  item-title="label"
                   item-value="value"
                   required
                   :rules="[v => !!v || 'Betalningssätt är obligatoriskt']"
@@ -468,20 +471,24 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="grey lighten-1"
-            text
+            variant="outlined"
+            color="grey-darken-1"
+            size="large"
             @click="closePaymentDialog"
+            class="me-4"
           >
             Avbryt
           </v-btn>
           <v-btn
-            color="var(--color-primary-light)"
+            color="primary"
+            variant="elevated"
+            size="large"
             :disabled="!validPaymentForm"
             @click="savePayment"
-            class="primary-action-btn"
             :loading="savingPayment"
+            elevation="2"
           >
-            <v-icon left>mdi-content-save</v-icon>
+            <v-icon start>mdi-content-save</v-icon>
             Registrera betalning
           </v-btn>
         </v-card-actions>
@@ -549,12 +556,11 @@
             <template v-slot:item.actions="{ item }">
               <div class="actions-container">
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
+                  <template v-slot:activator="{ props }">
                     <v-btn 
                       class="table-action-btn edit-action mr-1"
                       @click="editPayment(item)"
-                      v-bind="attrs" 
-                      v-on="on"
+                      v-bind="props" 
                     >
                       <v-icon small>mdi-pencil</v-icon>
                     </v-btn>
@@ -563,12 +569,11 @@
                 </v-tooltip>
                 
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
+                  <template v-slot:activator="{ props }">
                     <v-btn 
                       class="table-action-btn delete-action"
                       @click="confirmDeletePayment(item)"
-                      v-bind="attrs" 
-                      v-on="on"
+                      v-bind="props" 
                     >
                       <v-icon small>mdi-delete</v-icon>
                     </v-btn>
@@ -818,16 +823,20 @@ export default {
       this.loading = true;
       
       try {
-        // Import the invoice service dynamically to avoid circular dependencies
-        const invoiceService = (await import('../services/invoice.service')).default;
+        // Import the invoice service if needed
+        const invoiceService = await import('../services/invoice.service').then(m => m.default);
         const response = await invoiceService.getAllInvoices();
-        this.invoices = response.data;
+        console.log('Invoices response:', response);
+        
+        // Make sure we're setting an array to this.invoices
+        this.invoices = Array.isArray(response.data) ? response.data : [];
         
         // Update statistics
         this.calculateStatistics();
       } catch (error) {
         console.error('Error fetching invoices:', error);
         this.showSnackbar('Kunde inte hämta fakturor', 'error');
+        this.invoices = [];
       } finally {
         this.loading = false;
       }
@@ -837,13 +846,14 @@ export default {
       this.loadingPayments = true;
       
       try {
-        // Import the invoice service dynamically to avoid circular dependencies
-        const invoiceService = (await import('../services/invoice.service')).default;
+        // Import the invoice service if needed
+        const invoiceService = await import('../services/invoice.service').then(m => m.default);
         const response = await invoiceService.getInvoicePayments(invoiceId);
-        this.invoicePayments = response.data;
+        this.invoicePayments = response.data || [];
       } catch (error) {
         console.error('Error fetching invoice payments:', error);
         this.showSnackbar('Kunde inte hämta betalningar', 'error');
+        this.invoicePayments = [];
       } finally {
         this.loadingPayments = false;
       }
@@ -852,7 +862,7 @@ export default {
     calculateStatistics() {
       // Reset statistics
       this.statistics = {
-        totalInvoices: this.invoices.length,
+        totalInvoices: Array.isArray(this.invoices) ? this.invoices.length : 0,
         paidInvoices: 0,
         unpaidInvoices: 0,
         overdueInvoices: 0,
@@ -862,9 +872,15 @@ export default {
         overdueAmount: 0
       };
       
+      // Make sure invoices is an array before iterating
+      if (!Array.isArray(this.invoices)) {
+        console.warn('Invoices is not an array:', this.invoices);
+        return;
+      }
+      
       // Calculate statistics based on invoices
       this.invoices.forEach(invoice => {
-        const amount = parseFloat(invoice.amount);
+        const amount = parseFloat(invoice.amount) || 0;
         this.statistics.totalAmount += amount;
         
         if (this.getPaymentStatus(invoice) === 'PAID') {
@@ -892,10 +908,13 @@ export default {
     },
     
     getPaymentStatus(invoice) {
-      return invoice.status;
+      if (!invoice) return '';
+      return invoice.status || '';
     },
     
     getStatusLabel(invoice) {
+      if (!invoice || !invoice.status) return '';
+      
       switch (invoice.status) {
         case 'CREATED':
           return 'Skapad';
@@ -910,11 +929,13 @@ export default {
         case 'CANCELLED':
           return 'Makulerad';
         default:
-          return invoice.status;
+          return invoice.status || '';
       }
     },
     
     getStatusColor(invoice) {
+      if (!invoice || !invoice.status) return 'grey';
+      
       if (this.isOverdue(invoice) && invoice.status !== 'PAID') {
         return 'error';
       }
@@ -938,6 +959,8 @@ export default {
     },
     
     isOverdue(invoice) {
+      if (!invoice || !invoice.status || !invoice.dueDate) return false;
+      
       if (invoice.status === 'PAID' || invoice.status === 'CANCELLED') {
         return false;
       }
@@ -946,34 +969,42 @@ export default {
         const dueDate = parseISO(invoice.dueDate);
         return dueDate < new Date();
       } catch (error) {
+        console.error('Error parsing due date:', error);
         return false;
       }
     },
     
     getDaysOverdue(invoice) {
+      if (!invoice || !invoice.dueDate) return 0;
+      
       try {
         const dueDate = parseISO(invoice.dueDate);
         return differenceInDays(new Date(), dueDate);
       } catch (error) {
+        console.error('Error calculating days overdue:', error);
         return 0;
       }
     },
     
     calculatePaidAmount(invoice) {
+      if (!invoice) return 0;
+      
       // For this demo, we'll approximate based on status
       // In a real implementation, you would sum all payments
       if (invoice.status === 'PAID') {
-        return parseFloat(invoice.amount);
+        return parseFloat(invoice.amount) || 0;
       } else if (invoice.status === 'PARTIALLY_PAID') {
         // Estimate 50% paid for the demo
-        return parseFloat(invoice.amount) * 0.5;
+        return (parseFloat(invoice.amount) || 0) * 0.5;
       } else {
         return 0;
       }
     },
     
     calculatePaidPercentage(invoice) {
-      const amount = parseFloat(invoice.amount);
+      if (!invoice) return 0;
+      
+      const amount = parseFloat(invoice.amount) || 0;
       if (!amount) return 0;
       
       const paidAmount = this.calculatePaidAmount(invoice);
@@ -982,12 +1013,13 @@ export default {
     
     getRemainingAmount(invoice) {
       if (!invoice) return 0;
-      const amount = parseFloat(invoice.amount);
+      const amount = parseFloat(invoice.amount) || 0;
       const paidAmount = this.calculatePaidAmount(invoice);
       return amount - paidAmount;
     },
     
     hasPayments(invoice) {
+      if (!invoice || !invoice.status) return false;
       return invoice.status === 'PARTIALLY_PAID' || invoice.status === 'PAID';
     },
     
@@ -1016,8 +1048,8 @@ export default {
         this.savingPayment = true;
         
         try {
-          // Import the invoice service dynamically
-          const invoiceService = (await import('../services/invoice.service')).default;
+          // Import the invoice service if needed
+          const invoiceService = await import('../services/invoice.service').then(m => m.default);
           await invoiceService.registerPayment(this.selectedInvoice.id, {
             amount: parseFloat(this.payment.amount),
             paymentDate: this.payment.paymentDate,
@@ -1079,8 +1111,8 @@ export default {
       this.deletingPayment = true;
       
       try {
-        // Import the invoice service dynamically
-        const invoiceService = (await import('../services/invoice.service')).default;
+        // Import the invoice service if needed
+        const invoiceService = await import('../services/invoice.service').then(m => m.default);
         await invoiceService.deletePayment(this.selectedPayment.id);
         
         this.showSnackbar('Betalning har tagits bort', 'success');
@@ -1100,11 +1132,15 @@ export default {
     },
     
     getPaymentTypeLabel(type) {
+      if (!type) return '';
+      
       const found = this.paymentTypes.find(pt => pt.value === type);
       return found ? found.label : type;
     },
     
     getPaymentTypeColor(type) {
+      if (!type) return 'grey';
+      
       switch (type) {
         case 'BANKGIRO':
           return 'var(--color-primary-light)';
@@ -1123,8 +1159,8 @@ export default {
       this.loadingOverdue = true;
       
       try {
-        // Import the invoice service dynamically
-        const invoiceService = (await import('../services/invoice.service')).default;
+        // Import the invoice service if needed
+        const invoiceService = await import('../services/invoice.service').then(m => m.default);
         const response = await invoiceService.markOverdueInvoices();
         
         const markedCount = response.data || 0;
@@ -1417,6 +1453,35 @@ export default {
 .action-btn-secondary:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.action-btn-rounded {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 2px;
+}
+
+.action-btn-rounded:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.action-btn-rounded:active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(0);
+}
+
+.action-btn-rounded .v-icon {
+  font-size: 16px;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 /* Statistics cards */

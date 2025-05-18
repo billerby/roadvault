@@ -1,7 +1,4 @@
-import axios from 'axios';
-import authHeader from './auth-header';
-
-const API_URL = '/api/v1/payments';
+import api from './api';
 
 /**
  * Service for managing payments in the frontend.
@@ -12,7 +9,7 @@ class PaymentService {
    * @returns {Promise} Promise with all payments
    */
   getAllPayments() {
-    return axios.get(API_URL, { headers: authHeader() });
+    return api.get('/v1/payments');
   }
 
   /**
@@ -21,7 +18,7 @@ class PaymentService {
    * @returns {Promise} Promise with payment details
    */
   getPaymentById(id) {
-    return axios.get(`${API_URL}/${id}`, { headers: authHeader() });
+    return api.get(`/v1/payments/${id}`);
   }
 
   /**
@@ -31,7 +28,7 @@ class PaymentService {
    * @returns {Promise} Promise with payments in the date range
    */
   getPaymentsByDateRange(startDate, endDate) {
-    return axios.get(`${API_URL}/by-date-range?startDate=${startDate}&endDate=${endDate}`, { headers: authHeader() });
+    return api.get(`/v1/payments/by-date-range?startDate=${startDate}&endDate=${endDate}`);
   }
 
   /**
@@ -40,7 +37,7 @@ class PaymentService {
    * @returns {Promise} Promise with payments of the specified type
    */
   getPaymentsByType(type) {
-    return axios.get(`${API_URL}/by-type?type=${type}`, { headers: authHeader() });
+    return api.get(`/v1/payments/by-type?type=${type}`);
   }
 
   /**
@@ -49,7 +46,7 @@ class PaymentService {
    * @returns {Promise} Promise with the created payment
    */
   createPayment(payment) {
-    return axios.post(API_URL, payment, { headers: authHeader() });
+    return api.post('/v1/payments', payment);
   }
 
   /**
@@ -59,7 +56,7 @@ class PaymentService {
    * @returns {Promise} Promise with the updated payment
    */
   updatePayment(id, payment) {
-    return axios.put(`${API_URL}/${id}`, payment, { headers: authHeader() });
+    return api.put(`/v1/payments/${id}`, payment);
   }
 
   /**
@@ -68,7 +65,7 @@ class PaymentService {
    * @returns {Promise} Promise with no content
    */
   deletePayment(id) {
-    return axios.delete(`${API_URL}/${id}`, { headers: authHeader() });
+    return api.delete(`/v1/payments/${id}`);
   }
 
   /**
@@ -80,9 +77,8 @@ class PaymentService {
     const formData = new FormData();
     formData.append('file', file);
     
-    return axios.post(`${API_URL}/import`, formData, {
+    return api.post(`/v1/payments/import`, formData, {
       headers: {
-        ...authHeader(),
         'Content-Type': 'multipart/form-data'
       }
     });

@@ -1,7 +1,4 @@
-import axios from 'axios';
-import authHeader from './auth-header';
-
-const API_URL = '/api/v1/invoices';
+import api from './api';
 
 /**
  * Service for managing invoices in the frontend.
@@ -12,7 +9,7 @@ class InvoiceService {
    * @returns {Promise} Promise with all invoices
    */
   getAllInvoices() {
-    return axios.get(API_URL, { headers: authHeader() });
+    return api.get('/v1/invoices');
   }
 
   /**
@@ -21,7 +18,7 @@ class InvoiceService {
    * @returns {Promise} Promise with invoice details
    */
   getInvoiceById(id) {
-    return axios.get(`${API_URL}/${id}`, { headers: authHeader() });
+    return api.get(`/v1/invoices/${id}`);
   }
 
   /**
@@ -30,7 +27,7 @@ class InvoiceService {
    * @returns {Promise} Promise with invoices for the property
    */
   getInvoicesByProperty(propertyId) {
-    return axios.get(`${API_URL}/by-property/${propertyId}`, { headers: authHeader() });
+    return api.get(`/v1/invoices/by-property/${propertyId}`);
   }
 
   /**
@@ -39,7 +36,7 @@ class InvoiceService {
    * @returns {Promise} Promise with invoices matching the status
    */
   getInvoicesByStatus(status) {
-    return axios.get(`${API_URL}/by-status?status=${status}`, { headers: authHeader() });
+    return api.get(`/v1/invoices/by-status?status=${status}`);
   }
 
   /**
@@ -48,7 +45,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the matching invoice
    */
   findInvoiceByOcr(ocrNumber) {
-    return axios.get(`${API_URL}/by-ocr?ocrNumber=${ocrNumber}`, { headers: authHeader() });
+    return api.get(`/v1/invoices/by-ocr?ocrNumber=${ocrNumber}`);
   }
 
   /**
@@ -58,7 +55,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the updated invoice
    */
   updateInvoiceStatus(id, status) {
-    return axios.put(`${API_URL}/${id}/status?status=${status}`, {}, { headers: authHeader() });
+    return api.put(`/v1/invoices/${id}/status?status=${status}`, {});
   }
 
   /**
@@ -67,7 +64,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the updated invoice
    */
   markInvoiceAsSent(id) {
-    return axios.put(`${API_URL}/${id}/mark-as-sent`, {}, { headers: authHeader() });
+    return api.put(`/v1/invoices/${id}/mark-as-sent`, {});
   }
 
   /**
@@ -75,7 +72,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the count of marked invoices
    */
   markOverdueInvoices() {
-    return axios.post(`${API_URL}/mark-overdue`, {}, { headers: authHeader() });
+    return api.post(`/v1/invoices/mark-overdue`, {});
   }
 
   /**
@@ -84,7 +81,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the invoice payments
    */
   getInvoicePayments(invoiceId) {
-    return axios.get(`${API_URL}/${invoiceId}/payments`, { headers: authHeader() });
+    return api.get(`/v1/invoices/${invoiceId}/payments`);
   }
 
   /**
@@ -94,7 +91,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the registered payment
    */
   registerPayment(invoiceId, payment) {
-    return axios.post(`${API_URL}/${invoiceId}/payments`, payment, { headers: authHeader() });
+    return api.post(`/v1/invoices/${invoiceId}/payments`, payment);
   }
 
   /**
@@ -104,7 +101,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the updated payment
    */
   updatePayment(paymentId, payment) {
-    return axios.put(`/api/v1/payments/${paymentId}`, payment, { headers: authHeader() });
+    return api.put(`/v1/payments/${paymentId}`, payment);
   }
 
   /**
@@ -113,7 +110,7 @@ class InvoiceService {
    * @returns {Promise} Promise with no content
    */
   deletePayment(paymentId) {
-    return axios.delete(`/api/v1/payments/${paymentId}`, { headers: authHeader() });
+    return api.delete(`/v1/payments/${paymentId}`);
   }
 
   /**
@@ -122,7 +119,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the count of sent reminders
    */
   sendReminders(invoiceIds) {
-    return axios.post(`${API_URL}/send-reminders`, { invoiceIds }, { headers: authHeader() });
+    return api.post(`/v1/invoices/send-reminders`, { invoiceIds });
   }
 
   /**
@@ -131,8 +128,7 @@ class InvoiceService {
    * @returns {Promise} Promise with the PDF blob
    */
   exportInvoicesToPdf(invoiceIds) {
-    return axios.post(`${API_URL}/export-pdf`, { invoiceIds }, { 
-      headers: { ...authHeader(), 'Content-Type': 'application/json' },
+    return api.post(`/v1/invoices/export-pdf`, { invoiceIds }, { 
       responseType: 'blob'
     });
   }
@@ -142,7 +138,7 @@ class InvoiceService {
    * @returns {Promise} Promise with invoice statistics
    */
   getInvoiceStatistics() {
-    return axios.get(`${API_URL}/statistics`, { headers: authHeader() });
+    return api.get(`/v1/invoices/statistics`);
   }
 }
 
