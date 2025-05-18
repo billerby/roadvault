@@ -57,6 +57,7 @@
                 v-model="paymentDate"
                 :display-format="formatDateISO"
                 label="Betalningsdatum"
+                placeholder="åååå-mm-dd"
                 locale="sv-SE"
                 required
                 :rules="[v => !!v || 'Betalningsdatum är obligatoriskt']"
@@ -400,5 +401,16 @@ function formatCurrency(value) {
 
 .dialog-title {
   background-color: #f5f5f5;
+}
+
+/* Custom styling for the date input to reinforce ISO format */
+:deep(.v-field__input) {
+  font-family: monospace; /* Helps align the dates better */
+}
+
+/* Styling for the placeholder to make the format more obvious */
+:deep(.v-field__input::placeholder) {
+  opacity: 0.7;
+  letter-spacing: 0.5px;
 }
 </style>
