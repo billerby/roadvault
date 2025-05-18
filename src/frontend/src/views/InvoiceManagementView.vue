@@ -716,22 +716,22 @@ export default {
       
       // Invoice headers
       invoiceHeaders: [
-        { text: 'Faktura nr', value: 'invoiceNumber', sortable: true },
-        { text: 'Fastighet / Ägare', value: 'ownerName', sortable: true },
-        { text: 'Beskrivning', value: 'billingDescription', sortable: true },
-        { text: 'Belopp', value: 'amount', sortable: true, align: 'right' },
-        { text: 'Förfallodatum', value: 'dueDate', sortable: true },
-        { text: 'Status', value: 'status', sortable: true },
-        { text: 'Åtgärder', value: 'actions', sortable: false, align: 'right' }
+        { title: 'Faktura nr', value: 'invoiceNumber', sortable: true },
+        { title: 'Fastighet / Ägare', value: 'ownerName', sortable: true },
+        { title: 'Beskrivning', value: 'billingDescription', sortable: true },
+        { title: 'Belopp', value: 'amount', sortable: true, align: 'right' },
+        { title: 'Förfallodatum', value: 'dueDate', sortable: true },
+        { title: 'Status', value: 'status', sortable: true },
+        { title: 'Åtgärder', value: 'actions', sortable: false, align: 'right' }
       ],
       
       // Payment headers
       paymentHeaders: [
-        { text: 'Datum', value: 'paymentDate', sortable: true },
-        { text: 'Belopp', value: 'amount', sortable: true, align: 'right' },
-        { text: 'Betalningssätt', value: 'paymentType', sortable: true },
-        { text: 'Kommentar', value: 'comment', sortable: false },
-        { text: 'Åtgärder', value: 'actions', sortable: false, align: 'right' }
+        { title: 'Datum', value: 'paymentDate', sortable: true },
+        { title: 'Belopp', value: 'amount', sortable: true, align: 'right' },
+        { title: 'Betalningssätt', value: 'paymentType', sortable: true },
+        { title: 'Kommentar', value: 'comment', sortable: false },
+        { title: 'Åtgärder', value: 'actions', sortable: false, align: 'right' }
       ],
       
       // Payment types
@@ -903,6 +903,7 @@ export default {
     },
     
     viewInvoice(invoice) {
+      console.log('Viewing invoice:', invoice);
       // Navigate to invoice detail view
       this.$router.push(`/invoices/${invoice.id}`);
     },
