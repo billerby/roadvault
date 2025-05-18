@@ -129,9 +129,10 @@ public class InvoiceServiceTest {
                 .map(Invoice::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
+        // With avrundning to whole kronor, we need to allow for a slightly larger rounding difference
         BigDecimal diff = testBilling.getTotalAmount().subtract(totalInvoiced).abs();
-        assertTrue(diff.compareTo(new BigDecimal("5")) < 0, 
-                "Total invoiced amount should approximately match billing amount");
+        assertTrue(diff.compareTo(new BigDecimal("35")) < 0, 
+                "Total invoiced amount should approximately match billing amount (within rounding margin)");
     }
 
     /**

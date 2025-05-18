@@ -243,11 +243,11 @@ public class InvoiceService {
             BigDecimal shareRatio,
             BigDecimal totalShareRatio,
             BigDecimal extraCharge) {
-        
+
         BigDecimal amount = totalAmount
                 .multiply(shareRatio)
                 .divide(totalShareRatio, 2, RoundingMode.HALF_UP);
-        
+
         // Add extra charge if applicable
         if (extraCharge != null && extraCharge.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal extraAmount = extraCharge
@@ -255,7 +255,8 @@ public class InvoiceService {
                     .divide(totalShareRatio, 2, RoundingMode.HALF_UP);
             amount = amount.add(extraAmount);
         }
-        
-        return amount;
+
+        // Avrunda till hela kronor (ingen decimal)
+        return amount.setScale(0, RoundingMode.HALF_UP);
     }
 }
