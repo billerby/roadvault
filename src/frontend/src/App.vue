@@ -108,14 +108,7 @@
           rounded="lg"
           class="my-1"
         ></v-list-item>
-        
-        <v-list-item 
-          v-if="hasRole('ADMIN')"
-          prepend-icon="mdi-cash-register"
-          title="Betalningar"
-          rounded="lg"
-          class="my-1"
-        ></v-list-item>
+
 
         <v-divider class="my-2"></v-divider>
 

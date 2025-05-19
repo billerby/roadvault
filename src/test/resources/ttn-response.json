@@ -1,0 +1,92 @@
+{
+  "result": {
+    "end_device_ids": {
+      "device_id": "eui-a840411f8182f655",
+      "application_ids": {
+        "application_id": "badtemperatur-application"
+      },
+      "dev_eui": "A840411F8182F655",
+      "dev_addr": "260BD9A5"
+    },
+    "received_at": "2025-05-20T16:28:09.562834363Z",
+    "uplink_message": {
+      "f_port": 2,
+      "f_cnt": 100086,
+      "frm_payload": "DS0ApQFQAP////8=",
+      "decoded_payload": {
+        "ADC_CH0V": 0.336,
+        "BatV": 3.373,
+        "Digital_IStatus": "L",
+        "Door_status": "OPEN",
+        "EXTI_Trigger": "FALSE",
+        "Hum_SHT": 6553.5,
+        "TempC1": 16.5,
+        "TempC_SHT": -0.1,
+        "Work_mode": "IIC"
+      },
+      "rx_metadata": [
+        {
+          "gateway_ids": {
+            "gateway_id": "lps8k113007",
+            "eui": "A840411EC4F84150"
+          },
+          "time": "2025-05-20T16:28:09.336933Z",
+          "timestamp": 3936391396,
+          "rssi": -109,
+          "channel_rssi": -109,
+          "snr": -1.2,
+          "location": {
+            "latitude": 58.0809480895067,
+            "longitude": 11.655348837375643,
+            "altitude": 12,
+            "source": "SOURCE_REGISTRY"
+          },
+          "channel_index": 6,
+          "received_at": "2025-05-20T16:28:09.355179603Z"
+        }
+      ],
+      "settings": {
+        "data_rate": {
+          "lora": {
+            "bandwidth": 125000,
+            "spreading_factor": 9,
+            "coding_rate": "4/5"
+          }
+        },
+        "frequency": "867700000",
+        "timestamp": 3936391396,
+        "time": "2025-05-20T16:28:09.336933Z"
+      },
+      "received_at": "2025-05-20T16:28:09.356547857Z",
+      "consumed_airtime": "0.205824s",
+      "packet_error_rate": 0.09090909,
+      "locations": {
+        "user": {
+          "latitude": 58.08212796179405,
+          "longitude": 11.65585845708847,
+          "source": "SOURCE_REGISTRY"
+        }
+      },
+      "version_ids": {
+        "brand_id": "dragino",
+        "model_id": "lsn50v2-d20",
+        "hardware_version": "_unknown_hw_version_",
+        "firmware_version": "1.1",
+        "band_id": "EU_863_870"
+      },
+      "network_ids": {
+        "net_id": "000013",
+        "ns_id": "EC656E0000000181",
+        "tenant_id": "ttn",
+        "cluster_id": "eu1",
+        "cluster_address": "eu1.cloud.thethings.network"
+      },
+      "last_battery_percentage": {
+        "f_cnt": 100054,
+        "value": 100,
+        "received_at": "2025-05-20T05:48:09.  894991059Z"
+      }
+    }
+  }
+}
+

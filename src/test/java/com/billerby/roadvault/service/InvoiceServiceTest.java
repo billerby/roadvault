@@ -1,31 +1,29 @@
 package com.billerby.roadvault.service;
 
-import com.billerby.roadvault.model.Billing;
-import com.billerby.roadvault.model.Invoice;
-import com.billerby.roadvault.model.Owner;
-import com.billerby.roadvault.model.Property;
+import com.billerby.roadvault.model.*;
 import com.billerby.roadvault.repository.BillingRepository;
 import com.billerby.roadvault.repository.InvoiceRepository;
 import com.billerby.roadvault.repository.PropertyRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
+import freemarker.template.TemplateException;
+import org.apache.fop.apps.FOPException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for invoice calculations based on Excel formula:
@@ -45,6 +43,15 @@ public class InvoiceServiceTest {
     @Mock
     private OcrService ocrService;
 
+    @Mock
+    private PdfGenerationService pdfGenerationService;
+    
+    @Mock
+    private AssociationService associationService;
+    
+    @Mock
+    private DTOMapperService dtoMapperService;
+
     @InjectMocks
     private InvoiceService invoiceService;
 
@@ -57,7 +64,7 @@ public class InvoiceServiceTest {
     private static final BigDecimal TOTAL_SHARE_RATIO = new BigDecimal("101.710");
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws FOPException, TemplateException, IOException, TransformerException {
         MockitoAnnotations.openMocks(this);
 
         // Set up test data based on the Excel example
@@ -69,6 +76,10 @@ public class InvoiceServiceTest {
         when(invoiceRepository.findMaxInvoiceNumberByYear(any())).thenReturn(0);
         when(ocrService.generateOcr(any(Integer.class), any(Long.class), any(Integer.class))).thenReturn("123456789");
         when(invoiceRepository.save(any(Invoice.class))).thenAnswer(i -> i.getArgument(0));
+        
+        // Setup mocks for association and PDF generation
+        when(associationService.getAssociationEntity()).thenReturn(new com.billerby.roadvault.model.Association());
+        when(pdfGenerationService.generateInvoicePdfDirect(any(), any(), any(), any())).thenReturn(new byte[0]);
     }
 
     /**
@@ -98,8 +109,7 @@ public class InvoiceServiceTest {
             BigDecimal calculatedService = invoiceService.calculateInvoiceAmount(
                     TOTAL_AMOUNT,
                     property.getShareRatio(),
-                    TOTAL_SHARE_RATIO,
-                    null // No extra charge in the Excel example
+                    TOTAL_SHARE_RATIO
             );
             
             // Round to nearest integer for comparison
@@ -117,7 +127,7 @@ public class InvoiceServiceTest {
      * Test the generation of invoices for all properties.
      */
     @Test
-    public void testGenerateInvoicesForBilling() {
+    public void testGenerateInvoicesForBilling() throws FOPException, TemplateException, IOException, TransformerException {
         // Act
         List<Invoice> invoices = invoiceService.generateInvoicesForBilling(1L);
         
@@ -133,6 +143,10 @@ public class InvoiceServiceTest {
         BigDecimal diff = testBilling.getTotalAmount().subtract(totalInvoiced).abs();
         assertTrue(diff.compareTo(new BigDecimal("35")) < 0, 
                 "Total invoiced amount should approximately match billing amount (within rounding margin)");
+        
+        // Verify that PDF generation was attempted for each property (since all have owners)
+        verify(pdfGenerationService, times(testProperties.size())).generateInvoicePdfDirect(
+                any(Invoice.class), any(Billing.class), any(Owner.class), any(Association.class));
     }
 
     /**

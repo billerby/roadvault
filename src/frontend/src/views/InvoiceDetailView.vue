@@ -333,43 +333,97 @@
             <span class="text-h5">Faktura PDF</span>
             <v-spacer></v-spacer>
             <v-btn
+              v-if="pdfUrl"
               color="var(--color-primary-light)"
               variant="tonal"
               prepend-icon="mdi-refresh"
               @click="refreshPdfView"
+              :loading="pdfLoading"
             >
               Uppdatera
+            </v-btn>
+            <v-btn
+              v-else
+              color="var(--color-primary-light)"
+              variant="tonal"
+              prepend-icon="mdi-file-pdf-box"
+              @click="generatePdf"
+              :loading="pdfLoading"
+            >
+              Generera PDF
             </v-btn>
           </v-card-title>
           <v-divider></v-divider>
           
           <v-card-text class="rv-p-md">
-            <div v-if="!pdfUrl" class="pdf-placeholder">
+            <div v-if="pdfLoading" class="d-flex flex-column justify-center align-center py-8">
+              <v-progress-circular
+                indeterminate
+                color="primary"
+                size="64"
+                class="mb-4"
+              ></v-progress-circular>
+              <span class="text-subtitle-1">Laddar faktura PDF...</span>
+              <span class="text-caption mt-2">Detta kan ta en liten stund</span>
+            </div>
+            <div v-else-if="!pdfUrl" class="pdf-placeholder">
               <div class="d-flex flex-column align-center justify-center py-8">
                 <v-icon size="64" color="grey lighten-1" class="mb-4">mdi-file-pdf-box</v-icon>
                 <h3 class="text-h6 text-center">PDF förhandsvisning inte tillgänglig</h3>
                 <p class="text-subtitle-1 text-center text-medium-emphasis mb-4">
-                  PDF förhandsvisning kommer att vara tillgänglig i en framtida version
+                  Fakturan kunde inte laddas. Försök igen eller generera en ny PDF.
                 </p>
+                <div class="d-flex">
+                  <v-btn
+                    color="var(--color-primary-light)"
+                    variant="tonal"
+                    prepend-icon="mdi-refresh"
+                    @click="loadPdfPreview"
+                    :loading="pdfLoading"
+                    class="mr-2"
+                  >
+                    Försök igen
+                  </v-btn>
+                  <v-btn
+                    color="var(--color-accent-light)"
+                    variant="tonal"
+                    prepend-icon="mdi-file-pdf-box"
+                    @click="generatePdf"
+                    :loading="pdfLoading"
+                  >
+                    Generera PDF
+                  </v-btn>
+                </div>
+              </div>
+            </div>
+            <div v-else class="pdf-container">
+              <div class="pdf-controls mb-2">
                 <v-btn
                   color="var(--color-primary-light)"
                   variant="tonal"
                   prepend-icon="mdi-download"
                   @click="downloadInvoice"
                   :loading="downloading"
+                  size="small"
+                  class="mr-2"
                 >
-                  Ladda ner faktura PDF
+                  Ladda ner PDF
+                </v-btn>
+                <v-btn
+                  color="var(--color-secondary-light)"
+                  variant="tonal"
+                  prepend-icon="mdi-printer"
+                  @click="printPdf"
+                  size="small"
+                >
+                  Skriv ut
                 </v-btn>
               </div>
-            </div>
-            <div v-else class="pdf-container">
-              <!-- PDF Viewer will be implemented here -->
-              <div class="pdf-viewer-placeholder">
-                <pdf-viewer 
-                  :src="pdfUrl" 
-                  :page="1"
+              <div class="pdf-viewer">
+                <vue-pdf-embed 
+                  :source="pdfUrl" 
                   style="height: 600px; width: 100%;"
-                ></pdf-viewer>
+                />
               </div>
             </div>
           </v-card-text>
@@ -523,22 +577,14 @@ import { defineComponent } from 'vue';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import invoiceService from '../services/invoice.service';
+import pdfService from '../services/pdf.service';
 import PaymentDialog from '../components/PaymentDialog.vue';
-
-// Import PdfViewer placeholder component - this will be replaced later with a real PDF viewer component
-const PdfViewer = {
-  props: ['src', 'page'],
-  template: `
-    <div class="pdf-viewer-placeholder">
-      <p class="text-center">PDF Viewer kommer att implementeras här</p>
-    </div>
-  `
-};
+import VuePdfEmbed from 'vue-pdf-embed';
 
 export default defineComponent({
   name: 'InvoiceDetailView',
   components: {
-    PdfViewer,
+    VuePdfEmbed,
     PaymentDialog
   },
 
@@ -653,6 +699,11 @@ export default defineComponent({
         
         // Fetch payments for this invoice
         this.fetchInvoicePayments();
+        
+        // Automatically load the PDF preview if invoice exists
+        if (this.invoice && this.invoice.id) {
+          this.loadPdfPreview();
+        }
       } catch (error) {
         console.error('Error fetching invoice:', error);
         this.showSnackbar('Kunde inte hämta faktura', 'error');
@@ -996,21 +1047,34 @@ export default defineComponent({
       this.downloading = true;
       
       try {
-        const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
+        let blob;
         
-        // Create a blob from the PDF data
-        const blob = new Blob([response.data], { type: 'application/pdf' });
+        // Om vi redan har laddat PDF:en, använd den istället för att göra en ny API-förfrågan
+        if (this.pdfUrl) {
+          try {
+            // Hämta PDF:en från den befintliga URL:en
+            const response = await fetch(this.pdfUrl);
+            blob = await response.blob();
+          } catch (fetchError) {
+            console.error('Error fetching from cached PDF URL:', fetchError);
+            // Om det misslyckas, fallback till att hämta PDF:en från servern
+            const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
+            blob = new Blob([response.data], { type: 'application/pdf' });
+          }
+        } else {
+          // Om vi inte har laddat PDF:en än, hämta den från servern
+          const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
+          blob = new Blob([response.data], { type: 'application/pdf' });
+        }
         
-        // Create a URL for the blob
+        // Skapa en nedladdningslänk
         const url = window.URL.createObjectURL(blob);
-        
-        // Create a link element and trigger download
         const link = document.createElement('a');
         link.href = url;
-        link.download = `faktura_${this.invoice.invoiceNumber}.pdf`;
+        link.download = `faktura_${this.invoice.invoiceNumber || this.invoice.id}.pdf`;
         link.click();
         
-        // Clean up by revoking the URL
+        // Städa upp URL:en efter nedladdning
         window.URL.revokeObjectURL(url);
         
         this.showSnackbar('Faktura PDF har laddats ner', 'success');
@@ -1020,6 +1084,23 @@ export default defineComponent({
       } finally {
         this.downloading = false;
       }
+    },
+    
+    printPdf() {
+      if (!this.pdfUrl) return;
+      
+      // Öppna PDF:en i ett nytt fönster för utskrift
+      const printWindow = window.open(this.pdfUrl, '_blank');
+      
+      // När fönstret har laddat, försök skriva ut det
+      printWindow.addEventListener('load', () => {
+        try {
+          printWindow.print();
+        } catch (error) {
+          console.error('Error printing PDF:', error);
+          this.showSnackbar('Kunde inte skriva ut PDF', 'error');
+        }
+      }, { once: true });
     },
     
     async sendInvoice() {
@@ -1059,17 +1140,84 @@ export default defineComponent({
     },
     
     refreshPdfView() {
-      // This method would normally fetch the PDF URL from the server
-      // For now we'll just simulate this
+      if (this.pdfUrl) {
+        // If PDF is already loaded, we'll refresh it
+        this.loadPdfPreview();
+      } else {
+        // Om PDF:en inte är laddad, försök generera den
+        this.generatePdf();
+      }
+    },
+    
+    async loadPdfPreview() {
+      if (!this.invoice || !this.invoice.id) return;
+      
       this.pdfLoading = true;
       
-      setTimeout(() => {
-        // In a real implementation, this would set a URL to the PDF on the server
-        // For now, we'll keep it null to show the placeholder
+      try {
+        const response = await pdfService.getInvoicePdf(this.invoice.id);
+        
+        // Create a blob from the PDF data
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        
+        // Create a URL for the blob
+        if (this.pdfUrl) {
+          // Clean up the old URL if it exists
+          window.URL.revokeObjectURL(this.pdfUrl);
+        }
+        
+        const url = window.URL.createObjectURL(blob);
+        this.pdfUrl = url;
+        
+        this.showSnackbar('PDF laddad', 'success');
+      } catch (error) {
+        console.error('Error loading PDF preview:', error);
+        
+        // Visa mer specifikt felmeddelande beroende på typ av fel
+        if (error.response) {
+          // Servern svarade med en felkod
+          const status = error.response.status;
+          if (status === 404) {
+            this.showSnackbar('PDF kunde inte hittas för denna faktura', 'warning');
+          } else if (status === 500) {
+            this.showSnackbar('Ett serverfel uppstod vid generering av PDF', 'error');
+          } else {
+            this.showSnackbar(`Kunde inte ladda PDF: ${status}`, 'error');
+          }
+        } else if (error.request) {
+          // Ingen respons mottagen
+          this.showSnackbar('Ingen respons från servern vid hämtning av PDF', 'error');
+        } else {
+          // Något gick fel vid uppsättning av förfrågan
+          this.showSnackbar('Kunde inte ladda PDF: ' + error.message, 'error');
+        }
+        
         this.pdfUrl = null;
+      } finally {
         this.pdfLoading = false;
-        this.showSnackbar('PDF förhandsvisning är inte tillgänglig ännu', 'info');
-      }, 1000);
+      }
+    },
+    
+    async generatePdf() {
+      if (!this.invoice || !this.invoice.id) return;
+      
+      this.pdfLoading = true;
+      this.showSnackbar('Genererar PDF...', 'info');
+      
+      try {
+        // Försök att generera PDF:en på servern
+        await pdfService.generateAndStoreInvoicePdf(this.invoice.id);
+        
+        // Ladda den nyss genererade PDF:en
+        await this.loadPdfPreview();
+        
+        this.showSnackbar('PDF genererad och laddad', 'success');
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        this.showSnackbar('Kunde inte generera PDF', 'error');
+      } finally {
+        this.pdfLoading = false;
+      }
     },
     
     formatCurrency(value) {
@@ -1159,13 +1307,29 @@ export default defineComponent({
   justify-content: center;
 }
 
-.pdf-viewer-placeholder {
+.pdf-container {
   background-color: #f5f5f5;
   border-radius: 8px;
-  min-height: 300px;
+  padding: 8px;
+  height: 650px;
+  overflow: hidden;
+}
+
+.pdf-controls {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: #fff;
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.pdf-viewer {
+  height: calc(100% - 50px);
+  width: 100%;
+  overflow: auto;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 

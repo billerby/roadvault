@@ -188,4 +188,24 @@ public class AssociationService {
         Association association = getOrCreateDefaultAssociation();
         return dtoMapperService.toAssociationDTO(association);
     }
+    
+    /**
+     * Get the association information.
+     * This is a convenience method for other services.
+     *
+     * @return The association DTO
+     */
+    public AssociationDTO getAssociation() {
+        return getOrCreateDefaultAssociationDTO();
+    }
+    
+    /**
+     * Get the association entity.
+     * This is a convenience method for other services that need the entity directly.
+     *
+     * @return The association entity
+     */
+    public Association getAssociationEntity() {
+        return getOrCreateDefaultAssociation();
+    }
 }

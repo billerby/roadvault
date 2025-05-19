@@ -3,32 +3,37 @@ package com.billerby.roadvault.controller;
 import com.billerby.roadvault.dto.InvoiceDTO;
 import com.billerby.roadvault.dto.PaymentDTO;
 import com.billerby.roadvault.model.Invoice;
-import com.billerby.roadvault.model.Payment;
 import com.billerby.roadvault.service.InvoiceService;
 import com.billerby.roadvault.service.PaymentService;
+import com.billerby.roadvault.service.PdfGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing invoices.
  */
 @RestController
-@RequestMapping("/v1/invoices")
+@RequestMapping("/api/v1/invoices")
 public class InvoiceController {
     
     private final InvoiceService invoiceService;
     private final PaymentService paymentService;
+    private final PdfGenerationService pdfGenerationService;
     
     @Autowired
-    public InvoiceController(InvoiceService invoiceService, PaymentService paymentService) {
+    public InvoiceController(InvoiceService invoiceService, 
+                             PaymentService paymentService,
+                             PdfGenerationService pdfGenerationService) {
         this.invoiceService = invoiceService;
         this.paymentService = paymentService;
+        this.pdfGenerationService = pdfGenerationService;
     }
     
     /**
@@ -54,6 +59,74 @@ public class InvoiceController {
     public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id) {
         InvoiceDTO invoiceDTO = invoiceService.getInvoiceWithDetailsDTOById(id);
         return ResponseEntity.ok(invoiceDTO);
+    }
+    
+    /**
+     * GET /v1/invoices/:id/pdf : Get the PDF for the "id" invoice.
+     * 
+     * @param id the id of the invoice to retrieve the PDF for
+     * @return the ResponseEntity with status 200 (OK) and with body the PDF, or with status 404 (Not Found)
+     */
+    @GetMapping("/{id}/pdf")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<byte[]> getInvoicePdf(@PathVariable Long id) {
+        // First check if PDF already exists in the database
+        byte[] existingPdf = invoiceService.getPdfById(id);
+        
+        if (existingPdf != null && existingPdf.length > 0) {
+            // Return the existing PDF
+            return createPdfResponse(existingPdf, id);
+        } else {
+            try {
+                // Generate new PDF
+                byte[] pdfBytes = pdfGenerationService.generateInvoicePdf(id);
+                
+                // Store PDF in database
+                pdfGenerationService.storePdfInDatabase(id, pdfBytes);
+                
+                // Return the newly generated PDF
+                return createPdfResponse(pdfBytes, id);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        }
+    }
+    
+    /**
+     * POST /v1/invoices/:id/pdf/generate : Generate and store a new PDF for the "id" invoice.
+     * 
+     * @param id the id of the invoice to generate a PDF for
+     * @return the ResponseEntity with status 200 (OK) or with status 500 (Internal Server Error)
+     */
+    @PostMapping("/{id}/pdf/generate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> generateInvoicePdf(@PathVariable Long id) {
+        boolean success = pdfGenerationService.generateAndStorePdf(id);
+        
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Helper method to create a PDF response with proper headers.
+     * 
+     * @param pdfBytes the PDF content
+     * @param invoiceId the invoice ID for the filename
+     * @return ResponseEntity configured for PDF download
+     */
+    private ResponseEntity<byte[]> createPdfResponse(byte[] pdfBytes, Long invoiceId) {
+        InvoiceDTO invoice = invoiceService.getInvoiceDTOById(invoiceId);
+        String filename = "faktura_" + invoice.getInvoiceNumber() + ".pdf";
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", filename);
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+        
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
     
     /**

@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-update-bath-temperature-coordinates
+      author: billerby
+      changes:
+        - modifyDataType:
+            tableName: bath_temperature
+            columnName: latitude
+            newDataType: numeric(20,14)
+        - modifyDataType:
+            tableName: bath_temperature
+            columnName: longitude
+            newDataType: numeric(20,14)
+        - modifyDataType:
+            tableName: bath_temperature
+            columnName: altitude
+            newDataType: numeric(20,14)
+      comment: Update coordinate columns to use numeric type for precision

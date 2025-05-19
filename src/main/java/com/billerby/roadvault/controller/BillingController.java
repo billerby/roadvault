@@ -2,7 +2,6 @@ package com.billerby.roadvault.controller;
 
 import com.billerby.roadvault.dto.BillingDTO;
 import com.billerby.roadvault.dto.InvoiceDTO;
-import com.billerby.roadvault.model.Billing;
 import com.billerby.roadvault.model.Invoice;
 import com.billerby.roadvault.service.BillingService;
 import com.billerby.roadvault.service.InvoiceService;
@@ -13,13 +12,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing billings.
  */
 @RestController
-@RequestMapping("/v1/billings")
+@RequestMapping("/api/v1/billings")
 public class BillingController {
     
     private final BillingService billingService;
@@ -39,8 +37,13 @@ public class BillingController {
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BillingDTO>> getAllBillings() {
-        List<BillingDTO> billingDTOs = billingService.getAllBillingDTOs();
-        return ResponseEntity.ok(billingDTOs);
+        try {
+            List<BillingDTO> billingDTOs = billingService.getAllBillingDTOs();
+            return ResponseEntity.ok(billingDTOs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;  // Re-throw to let the error handler deal with it
+        }
     }
     
     /**
@@ -106,7 +109,10 @@ public class BillingController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BillingDTO> createBilling(
             @RequestBody BillingDTO billingDTO,
-            @RequestParam(defaultValue = "false") boolean generateInvoices) {
+            @RequestParam(defaultValue = "false") String generateInvoicesParam) {
+        
+        // Convert the string parameter to boolean, handling various formats
+        boolean generateInvoices = Boolean.parseBoolean(generateInvoicesParam);
         
         BillingDTO createdBillingDTO = billingService.createBillingWithInvoicesDTO(billingDTO, generateInvoices);
         return new ResponseEntity<>(createdBillingDTO, HttpStatus.CREATED);

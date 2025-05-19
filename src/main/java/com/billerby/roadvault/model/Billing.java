@@ -1,6 +1,7 @@
 package com.billerby.roadvault.model;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,9 +27,6 @@ public class Billing {
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
-
-    @Column(name = "extra_charge", precision = 10, scale = 2)
-    private BigDecimal extraCharge = BigDecimal.ZERO;
 
     @Column(name = "issue_date", nullable = false)
     private LocalDate issueDate;
@@ -114,14 +112,6 @@ public class Billing {
 
     public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
-    }
-
-    public BigDecimal getExtraCharge() {
-        return extraCharge;
-    }
-
-    public void setExtraCharge(BigDecimal extraCharge) {
-        this.extraCharge = extraCharge;
     }
 
     public LocalDate getIssueDate() {

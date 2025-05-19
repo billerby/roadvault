@@ -1,0 +1,59 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-bath-temperature-table
+      author: erib
+      changes:
+        - createTable:
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: device_id
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: temperature
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: battery_percentage
+                  type: INT
+              - column:
+                  name: latitude
+                  type: DOUBLE
+              - column:
+                  name: longitude
+                  type: DOUBLE
+              - column:
+                  name: altitude
+                  type: DOUBLE
+              - column:
+                  name: received_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: raw_payload
+                  type: TEXT
+        
+        - createIndex:
+            indexName: idx_bath_temp_device_id
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: device_id
+        
+        - createIndex:
+            indexName: idx_bath_temp_received_at
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: received_at

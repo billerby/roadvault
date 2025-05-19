@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.hibernate.LazyInitializationException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -155,6 +156,30 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Handle LazyInitializationException.
+     *
+     * @param ex the exception
+     * @param request the current request
+     * @return the error response
+     */
+    @ExceptionHandler(LazyInitializationException.class)
+    public ResponseEntity<ErrorResponse> handleLazyInitializationException(
+            LazyInitializationException ex, WebRequest request) {
+        
+        // Log the exception for debugging
+        ex.printStackTrace();
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Error fetching related data: " + ex.getMessage(),
+                request.getDescription(false),
+                LocalDateTime.now()
+        );
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    /**
      * Handle all other exceptions.
      *
      * @param ex the exception
@@ -164,10 +189,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {
+        // Log the exception for debugging
+        ex.printStackTrace();
         
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "An unexpected error occurred",
+                "An unexpected error occurred: " + ex.getMessage(),
                 request.getDescription(false),
                 LocalDateTime.now()
         );

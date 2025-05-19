@@ -1,10 +1,6 @@
 package com.billerby.roadvault.controller;
 
-import com.billerby.roadvault.dto.OwnerDTO;
 import com.billerby.roadvault.dto.PropertyDTO;
-import com.billerby.roadvault.exception.ResourceNotFoundException;
-import com.billerby.roadvault.model.Owner;
-import com.billerby.roadvault.model.Property;
 import com.billerby.roadvault.service.OwnerService;
 import com.billerby.roadvault.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +10,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing properties.
  */
 @RestController
-@RequestMapping("/v1/properties")
+@RequestMapping("/api/v1/properties")
 public class PropertyController {
     
     private final PropertyService propertyService;

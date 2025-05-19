@@ -1,0 +1,45 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: src/frontend/package-lock.json
+        
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Run frontend tests
+      run: |
+        cd src/frontend
+        npm ci
+        npm run test
+        
+    - name: Build application
+      run: mvn clean package -Pprod
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: roadvault-jar
+        path: target/*.jar
+        retention-days: 30

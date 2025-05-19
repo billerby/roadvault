@@ -1,8 +1,6 @@
 package com.billerby.roadvault.controller;
 
 import com.billerby.roadvault.dto.OwnerDTO;
-import com.billerby.roadvault.exception.ResourceNotFoundException;
-import com.billerby.roadvault.model.Owner;
 import com.billerby.roadvault.service.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,13 +9,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST controller for managing owners.
  */
 @RestController
-@RequestMapping("/v1/owners")
+@RequestMapping("/api/v1/owners")
 public class OwnerController {
     
     private final OwnerService ownerService;

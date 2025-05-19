@@ -1,0 +1,286 @@
+<#ftl encoding="UTF-8">
+<?xml version="1.0" encoding="UTF-8"?>
+<#setting locale="sv_SE">
+<#setting number_format="###,###,###.###">
+<fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+  <fo:layout-master-set>
+    <!-- Define the A4 page layout -->
+    <fo:simple-page-master master-name="A4" page-height="29.7cm" page-width="21.0cm" 
+                          margin-top="1.5cm" margin-bottom="1.5cm" margin-left="2cm" margin-right="2cm">
+      <fo:region-body margin-top="0.5cm" margin-bottom="0.5cm"/>
+    </fo:simple-page-master>
+  </fo:layout-master-set>
+
+  <fo:page-sequence master-reference="A4">
+    <!-- Main content -->
+    <fo:flow flow-name="xsl-region-body">
+      <!-- Header with association name and title -->
+      <fo:block>
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="70%"/>
+          <fo:table-column column-width="30%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <!-- Left: Association name -->
+              <fo:table-cell>
+                <fo:block font-family="Helvetica" font-size="16pt" font-weight="bold">
+                  ${invoice.associationName!"Apelgårdens Vägsamfällighet"}
+                </fo:block>
+                <fo:block font-family="Helvetica" font-size="9pt" padding-top="2mm">
+                  Reg nr ${invoice.orgNumber!""}
+                </fo:block>
+              </fo:table-cell>
+              <!-- Right: Document type -->
+              <fo:table-cell>
+                <fo:block font-family="Helvetica" font-size="16pt" font-weight="bold" text-align="right">
+                  FAKTURA
+                </fo:block>
+                <fo:block font-family="Helvetica" font-size="9pt" padding-top="2mm" text-align="right">
+                  Nr ${invoice.invoiceNumber!""}
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+
+      <!-- Separator - some space -->
+      <fo:block space-before="10mm"></fo:block>
+
+      <!-- Address information -->
+      <fo:block>
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="70%"/>
+          <fo:table-column column-width="30%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <!-- Left: Association contact -->
+              <fo:table-cell>
+              <#if invoice.associationEmail?has_content>
+              <fo:block font-family="Helvetica" font-size="10pt">
+                ${invoice.associationEmail!""}
+              </fo:block>
+              </#if>
+                <#if invoice.associationPhone?has_content>
+                <fo:block font-family="Helvetica" font-size="10pt">
+                  ${invoice.associationPhone!""}
+                </fo:block>
+                </#if>
+              </fo:table-cell>
+              
+              <!-- Right: Property and recipient info -->
+              <fo:table-cell>
+                <#if invoice.propertyDesignation?has_content>
+                <fo:block font-family="Helvetica" font-size="10pt">
+                  ${invoice.propertyDesignation!""}
+                </fo:block>
+                </#if>
+                <#if invoice.recipientName?has_content>
+                <fo:block font-family="Helvetica" font-size="10pt">
+                  ${invoice.recipientName!""}
+                </fo:block>
+                </#if>
+                <#if invoice.recipientEmail?has_content>
+                <fo:block font-family="Helvetica" font-size="10pt">
+                  <fo:basic-link external-destination="url('mailto:${invoice.recipientEmail}')" color="blue">
+                    ${invoice.recipientEmail!""}
+                  </fo:basic-link>
+                </fo:block>
+                </#if>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+
+      <!-- Payment information and invoice details -->
+      <fo:block padding-top="5mm">
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="70%"/>
+          <fo:table-column column-width="30%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <!-- Left: Payment information -->
+              <fo:table-cell>
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  BETALNINGSINFORMATION
+                </fo:block>
+                <#if invoice.plusgiro?has_content>
+                <fo:block font-family="Helvetica" font-size="10pt" padding-top="2mm">
+                  Plusgiro: ${invoice.plusgiro!""}
+                </fo:block>
+                </#if>
+                
+                <fo:block font-family="Helvetica" font-size="10pt" padding-top="2mm">
+                  Betala senast på förfallodagen. Ange OCR-nummer vid betalning.
+                </fo:block>
+              </fo:table-cell>
+              
+              <!-- Right: Invoice details -->
+              <fo:table-cell>
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  DATUM
+                </fo:block>
+                <fo:block font-family="Helvetica" font-size="10pt" padding-top="2mm">
+                  ${invoice.invoiceDate!""}
+                </fo:block>
+                
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold" padding-top="5mm">
+                  SISTA BETALNINGSDAG
+                </fo:block>
+                <fo:block font-family="Helvetica" font-size="10pt" padding-top="2mm">
+                  ${invoice.dueDate!""}
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+
+      <!-- Invoice table -->
+      <fo:block padding-top="10mm">
+        <fo:table table-layout="fixed" width="100%" border="0.5pt solid black" border-collapse="collapse">
+          <!-- Column definitions - adjusted to prevent content from being cut off -->
+          <fo:table-column column-width="15%"/>
+          <fo:table-column column-width="40%"/>
+          <fo:table-column column-width="25%"/>
+          <fo:table-column column-width="20%"/>
+          
+          <!-- Table header -->
+          <fo:table-header>
+            <fo:table-row>
+              <fo:table-cell border="0.5pt solid black" padding="3mm">
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  Vägavgift
+                </fo:block>
+              </fo:table-cell>
+              <fo:table-cell border="0.5pt solid black" padding="3mm">
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  BESKRIVNING
+                </fo:block>
+              </fo:table-cell>
+              <fo:table-cell border="0.5pt solid black" padding="3mm">
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  Andelskostnad
+                </fo:block>
+              </fo:table-cell>
+              <fo:table-cell border="0.5pt solid black" padding="3mm" background-color="#FFFFCC">
+                <fo:block font-family="Helvetica" font-size="10pt" font-weight="bold">
+                  SUMMA
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-header>
+          
+          <!-- Table body -->
+          <fo:table-body>
+            <#if invoice.items?? && (invoice.items?size > 0)>
+              <#list invoice.items as item>
+                <fo:table-row>
+                  <fo:table-cell border="0.5pt solid black" padding="3mm">
+                    <fo:block font-family="Helvetica" font-size="10pt">
+                      <#if invoice.invoiceNumber?has_content && invoice.invoiceNumber?length gte 4>
+                        ${invoice.invoiceNumber?substring(0, 4)!""}
+                      <#else>
+                        ${(invoice.invoiceDate?substring(0, 4))!""}
+                      </#if>
+                    </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell border="0.5pt solid black" padding="3mm">
+                    <fo:block font-family="Helvetica" font-size="10pt">
+                      ${item.description!"Årsavgift"}
+                    </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell border="0.5pt solid black" padding="3mm">
+                    <fo:block font-family="Helvetica" font-size="10pt">
+                      <#if item.unitPrice?has_content>
+                        ${item.unitPrice!""}
+                      </#if>
+                    </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell border="0.5pt solid black" padding="3mm" background-color="#FFFFCC">
+                    <fo:block font-family="Helvetica" font-size="10pt">
+                      <#-- Manually format amount without locale issues -->
+                      <#if item.amount?has_content>
+                        ${item.amount!""}
+                      </#if>
+                    </fo:block>
+                  </fo:table-cell>
+                </fo:table-row>
+              </#list>
+            </#if>
+            <!-- Empty row -->
+            <fo:table-row height="15mm">
+              <fo:table-cell border="0.5pt solid black" number-columns-spanned="4">
+                <fo:block></fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+            <!-- Total row -->
+            <fo:table-row>
+              <fo:table-cell number-columns-spanned="3" border="0.5pt solid black">
+                <fo:block></fo:block>
+              </fo:table-cell>
+              <fo:table-cell border="0.5pt solid black" padding="3mm" background-color="#FFFFCC">
+                <fo:block font-family="Helvetica" font-size="10pt">
+                  <#-- Manually format total without locale issues -->
+                  <#if invoice.total?has_content>
+                   ${invoice.total!""}
+                  </#if>
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+
+      <!-- Payment information highlighted -->
+      <fo:block padding-top="10mm">
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="100%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <fo:table-cell background-color="#FFFFCC" padding="3mm">
+                <#if invoice.plusgiro?has_content>
+                <fo:block font-family="Helvetica" font-size="11pt" font-weight="bold">
+                  Plusgiro nummer ${invoice.plusgiro!""}
+                </fo:block>
+                </#if>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+      
+      <!-- OCR reference -->
+      <fo:block padding-top="5mm">
+        <fo:table table-layout="fixed" width="100%">
+          <fo:table-column column-width="100%"/>
+          <fo:table-body>
+            <fo:table-row>
+              <fo:table-cell background-color="#FFFFCC" padding="3mm">
+                <fo:block font-family="Helvetica" font-size="11pt" font-weight="bold">
+                  Ange OCR-nummer vid betalning: ${invoice.paymentReference!""}
+                </fo:block>
+              </fo:table-cell>
+            </fo:table-row>
+          </fo:table-body>
+        </fo:table>
+      </fo:block>
+
+      <!-- Contact information -->
+      <fo:block padding-top="10mm" font-family="Helvetica" font-size="10pt">
+        Om du har några frågor om den här fakturan kan du kontakta:
+        <#if invoice.associationEmail?has_content>
+        <fo:basic-link external-destination="url('mailto:${invoice.associationEmail}')" color="blue">
+          ${invoice.associationEmail!""}
+        </fo:basic-link>
+        </#if>
+      </fo:block>
+
+      <!-- Thank you note -->
+      <fo:block padding-top="5mm" font-family="Helvetica" font-size="10pt" font-weight="bold" text-align="center">
+        TACK FÖR ATT NI BETALAR I TID
+      </fo:block>
+    </fo:flow>
+  </fo:page-sequence>
+</fo:root>
