@@ -7,3 +7,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/002-add-association-table.yaml
   - include:
       file: classpath:db/changelog/changes/03-import-owners-properties.yaml
+  - include:
+      file: classpath:db/changelog/changes/003-add-apelgarden-data.yaml
