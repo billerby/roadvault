@@ -13,6 +13,7 @@
     <v-btn
       class="action-btn add-btn"
       @click="openNewBillingDialog"
+      title="Lägg till ny utdebitering"
     >
       <v-icon class="action-icon">mdi-plus</v-icon>
     </v-btn>
@@ -57,40 +58,69 @@
       
       <template v-slot:item.actions="{ item }">
         <div class="actions-container">
-          <v-btn 
-            class="table-action-btn view-action mr-1"
-            @click="viewBilling(item)"
-            title="Visa detaljer"
-          >
-            <v-icon small>mdi-eye</v-icon>
-          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                class="action-btn-rounded mr-1"
+                color="primary"
+                icon
+                small
+                v-bind="props" 
+                @click="viewBilling(item)"
+              >
+                <v-icon small>mdi-eye</v-icon>
+              </v-btn>
+            </template>
+            <span>Visa detaljer</span>
+          </v-tooltip>
           
-          <v-btn 
-            class="table-action-btn invoice-action mr-1"
-            @click="generateInvoices(item)"
-            title="Generera fakturor"
-            v-if="item.invoiceCount === 0"
-          >
-            <v-icon small>mdi-file-document-multiple</v-icon>
-          </v-btn>
+          <v-tooltip bottom v-if="item.invoiceCount === 0">
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                class="action-btn-rounded mr-1"
+                color="accent"
+                icon
+                small
+                v-bind="props" 
+                @click="generateInvoices(item)"
+              >
+                <v-icon small>mdi-file-document-multiple</v-icon>
+              </v-btn>
+            </template>
+            <span>Generera fakturor</span>
+          </v-tooltip>
           
-          <v-btn 
-            class="table-action-btn invoice-action mr-1"
-            @click="viewInvoices(item)"
-            title="Visa fakturor"
-            v-else
-          >
-            <v-icon small>mdi-file-document-outline</v-icon>
-          </v-btn>
+          <v-tooltip bottom v-else>
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                class="action-btn-rounded mr-1"
+                color="accent"
+                icon
+                small
+                v-bind="props" 
+                @click="viewInvoices(item)"
+              >
+                <v-icon small>mdi-file-document-outline</v-icon>
+              </v-btn>
+            </template>
+            <span>Visa fakturor</span>
+          </v-tooltip>
           
-          <v-btn 
-            class="table-action-btn edit-action"
-            @click="editBilling(item)"
-            title="Redigera"
-            v-if="item.invoiceCount === 0"
-          >
-            <v-icon small>mdi-pencil</v-icon>
-          </v-btn>
+          <v-tooltip bottom v-if="item.invoiceCount === 0">
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                class="action-btn-rounded"
+                color="secondary"
+                icon
+                small
+                v-bind="props" 
+                @click="editBilling(item)"
+              >
+                <v-icon small>mdi-pencil</v-icon>
+              </v-btn>
+            </template>
+            <span>Redigera</span>
+          </v-tooltip>
         </div>
       </template>
       
@@ -320,6 +350,7 @@
             color="var(--color-primary-light)"
             :disabled="!valid"
             @click="saveBilling"
+            :loading="loading"
             class="primary-action-btn"
           >
             <v-icon left>mdi-content-save</v-icon>
@@ -346,25 +377,27 @@
       </ul>
       <p class="font-weight-medium mt-4">Denna åtgärd kan inte ångras!</p>
     </v-card-text>
-    <v-divider></v-divider>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn 
-        color="grey lighten-1" 
-        text 
-        @click="confirmDialog = false"
-      >
-        Avbryt
-      </v-btn>
-      <v-btn 
-        color="var(--color-primary-light)"
-        @click="confirmGenerateInvoices"
-        class="primary-action-btn"
-      >
-        <v-icon left>mdi-check</v-icon>
-        Generera fakturor
-      </v-btn>
-    </v-card-actions>
+        <v-divider></v-divider>
+        
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey lighten-1"
+            text
+            @click="confirmDialog = false"
+          >
+            Avbryt
+          </v-btn>
+          <v-btn 
+            color="var(--color-primary-light)"
+            @click="confirmGenerateInvoices"
+            :loading="loading"
+            class="primary-action-btn"
+          >
+            <v-icon left>mdi-check</v-icon>
+            Generera fakturor
+          </v-btn>
+        </v-card-actions>
   </v-card>
 </v-dialog>
 
@@ -670,78 +703,34 @@ export default {
   margin-bottom: var(--spacing-md);
 }
 
-/* Tabellknappstilar */
-.table-action-btn {
-  width: 36px;
-  height: 36px;
-  min-width: 0;
-  border-radius: 18px !important;
-  margin: 0 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  position: relative;
+/* Status toggle button group */
+.status-toggle {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
   overflow: hidden;
 }
 
-.table-action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.status-toggle .v-btn {
+  height: 36px;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 500;
+  border-radius: 0 !important;
+  background-color: white !important;
 }
 
-.table-action-btn:hover::before {
-  opacity: 1;
-}
-
-.table-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
-}
-
-.table-action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-}
-
-.table-action-btn .v-icon {
-  font-size: 16px;
-  transition: transform 0.2s ease;
-}
-
-.table-action-btn:hover .v-icon {
-  transform: scale(1.15);
-}
-
-.view-action {
+.status-toggle .v-btn.v-item--active {
   background-color: var(--color-primary-light) !important;
   color: white !important;
 }
 
-.edit-action {
-  background-color: var(--color-secondary-light) !important;
-  color: white !important;
-}
-
-.invoice-action {
-  background-color: var(--color-accent-light) !important;
-  color: white !important;
-}
-
-/* Åtgärdsknappar i header */
+/* Action buttons in header */
 .action-btn {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   min-width: 0;
-  border-radius: 21px !important;
+  border-radius: 20px !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -788,9 +777,38 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Primära åtgärdsknappar */
+/* Table rounded action buttons - new style */
+.action-btn-rounded {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease;
+  border-radius: 50%;
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 2px;
+}
+
+.action-btn-rounded:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.action-btn-rounded:active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(0);
+}
+
+.action-btn-rounded .v-icon {
+  font-size: 16px;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Primary action buttons */
 .primary-action-btn {
-  /* Keep existing properties */
   height: 42px;
   border-radius: var(--button-border-radius) !important;
   padding: 0 24px !important;
@@ -802,12 +820,11 @@ export default {
   overflow: hidden;
   transition: all 0.3s ease !important;
   
-  /* Add these properties for better text clarity */
-  color: white !important; /* Assuming a dark button background */
-  font-size: 16px !important; /* Increase font size */
-  font-weight: 600 !important; /* Make text bolder */
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important; /* Add subtle text shadow for better contrast */
-  line-height: 42px !important; /* Center text vertically */
+  color: white !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+  line-height: 42px !important;
 }
 
 .primary-action-btn::before {
@@ -833,17 +850,17 @@ export default {
 
 .primary-action-btn:active {
   transform: translateY(0);
-  
 }
 
 .divisor {
   display: inline-block;
   width: 100%;
   height: 1px;
-  background-color: black; /* Eller en annan färg som passar designen */
-  margin: 4px 0; /* Justera avståndet om det behövs */
+  background-color: black;
+  margin: 4px 0;
   vertical-align: middle;
 }
+
 .formula-container {
   text-align: center;
   margin: 16px 0;
@@ -866,11 +883,11 @@ export default {
 }
 
 .pa-golden {
-  padding: 16px; /* Justera efter behov */
+  padding: 16px;
 }
 
 .mb-golden {
-  margin-bottom: 16px; /* Justera efter behov */
+  margin-bottom: 16px;
 }
 
 .custom-table {
