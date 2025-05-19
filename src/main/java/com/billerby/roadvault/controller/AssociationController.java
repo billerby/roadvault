@@ -32,8 +32,8 @@ public class AssociationController {
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<AssociationDTO> getAssociation() {
-        Association association = associationService.getOrCreateDefaultAssociation();
-        return ResponseEntity.ok(AssociationDTO.fromEntity(association));
+        AssociationDTO associationDTO = associationService.getOrCreateDefaultAssociationDTO();
+        return ResponseEntity.ok(associationDTO);
     }
     
     /**
@@ -45,18 +45,16 @@ public class AssociationController {
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AssociationDTO> updateAssociation(@RequestBody AssociationDTO associationDTO) {
-        Association association = convertToEntity(associationDTO);
+        AssociationDTO updatedAssociationDTO;
         
-        Association updatedAssociation;
-        if (association.getId() != null) {
-            updatedAssociation = associationService.updateAssociation(association.getId(), association);
+        if (associationDTO.getId() != null) {
+            updatedAssociationDTO = associationService.updateAssociationDTO(associationDTO.getId(), associationDTO);
         } else {
-            Association defaultAssociation = associationService.getOrCreateDefaultAssociation();
-            association.setId(defaultAssociation.getId());
-            updatedAssociation = associationService.updateAssociation(defaultAssociation.getId(), association);
+            AssociationDTO defaultAssociationDTO = associationService.getOrCreateDefaultAssociationDTO();
+            updatedAssociationDTO = associationService.updateAssociationDTO(defaultAssociationDTO.getId(), associationDTO);
         }
         
-        return ResponseEntity.ok(AssociationDTO.fromEntity(updatedAssociation));
+        return ResponseEntity.ok(updatedAssociationDTO);
     }
     
     /**
@@ -71,37 +69,13 @@ public class AssociationController {
     public ResponseEntity<AssociationDTO> createAssociation(@RequestBody AssociationDTO associationDTO) {
         // Only create if no association exists
         if (associationService.getAllAssociations().isEmpty()) {
-            Association association = convertToEntity(associationDTO);
-            Association createdAssociation = associationService.createAssociation(association);
-            return new ResponseEntity<>(AssociationDTO.fromEntity(createdAssociation), HttpStatus.CREATED);
+            AssociationDTO createdAssociationDTO = associationService.createAssociationDTO(associationDTO);
+            return new ResponseEntity<>(createdAssociationDTO, HttpStatus.CREATED);
         } else {
             // Otherwise update the existing one
             return updateAssociation(associationDTO);
         }
     }
     
-    /**
-     * Convert DTO to entity.
-     *
-     * @param dto the DTO to convert
-     * @return the converted entity
-     */
-    private Association convertToEntity(AssociationDTO dto) {
-        Association association = new Association();
-        association.setId(dto.getId());
-        association.setName(dto.getName());
-        association.setOrganizationNumber(dto.getOrganizationNumber());
-        association.setBankgiroNumber(dto.getBankgiroNumber());
-        association.setPlusgiroNumber(dto.getPlusgiroNumber());
-        association.setEmail(dto.getEmail());
-        association.setPhone(dto.getPhone());
-        association.setAddress(dto.getAddress());
-        association.setPostalCode(dto.getPostalCode());
-        association.setCity(dto.getCity());
-        association.setWebsite(dto.getWebsite());
-        association.setInvoiceText(dto.getInvoiceText());
-        association.setReminderDays(dto.getReminderDays());
-        association.setReminderFee(dto.getReminderFee());
-        return association;
-    }
+
 }

@@ -1,10 +1,12 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.PaymentDTO;
 import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Invoice;
 import com.billerby.roadvault.model.Payment;
 import com.billerby.roadvault.repository.InvoiceRepository;
 import com.billerby.roadvault.repository.PaymentRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,15 +24,18 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
     private final OcrService ocrService;
+    private final DTOMapperService dtoMapperService;
 
     @Autowired
     public PaymentService(
             PaymentRepository paymentRepository,
             InvoiceRepository invoiceRepository,
-            OcrService ocrService) {
+            OcrService ocrService,
+            DTOMapperService dtoMapperService) {
         this.paymentRepository = paymentRepository;
         this.invoiceRepository = invoiceRepository;
         this.ocrService = ocrService;
+        this.dtoMapperService = dtoMapperService;
     }
 
     /**
@@ -40,6 +45,16 @@ public class PaymentService {
      */
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
+    }
+    
+    /**
+     * Get all payment DTOs.
+     *
+     * @return List of all payment DTOs
+     */
+    public List<PaymentDTO> getAllPaymentDTOs() {
+        List<Payment> payments = getAllPayments();
+        return dtoMapperService.toPaymentDTOList(payments);
     }
 
     /**
@@ -53,6 +68,18 @@ public class PaymentService {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
     }
+    
+    /**
+     * Get a payment DTO by ID.
+     *
+     * @param id The payment ID
+     * @return The payment DTO
+     * @throws ResourceNotFoundException if payment is not found
+     */
+    public PaymentDTO getPaymentDTOById(Long id) {
+        Payment payment = getPaymentById(id);
+        return dtoMapperService.toPaymentDTO(payment);
+    }
 
     /**
      * Get payments by invoice ID.
@@ -62,6 +89,17 @@ public class PaymentService {
      */
     public List<Payment> getPaymentsByInvoiceId(Long invoiceId) {
         return paymentRepository.findByInvoiceId(invoiceId);
+    }
+    
+    /**
+     * Get payment DTOs by invoice ID.
+     *
+     * @param invoiceId The invoice ID
+     * @return List of payment DTOs for the invoice
+     */
+    public List<PaymentDTO> getPaymentDTOsByInvoiceId(Long invoiceId) {
+        List<Payment> payments = getPaymentsByInvoiceId(invoiceId);
+        return dtoMapperService.toPaymentDTOList(payments);
     }
 
     /**
@@ -74,6 +112,18 @@ public class PaymentService {
     public List<Payment> getPaymentsByDateRange(LocalDate startDate, LocalDate endDate) {
         return paymentRepository.findByPaymentDateBetween(startDate, endDate);
     }
+    
+    /**
+     * Get payment DTOs by date range.
+     *
+     * @param startDate The start date
+     * @param endDate The end date
+     * @return List of payment DTOs in the date range
+     */
+    public List<PaymentDTO> getPaymentDTOsByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<Payment> payments = getPaymentsByDateRange(startDate, endDate);
+        return dtoMapperService.toPaymentDTOList(payments);
+    }
 
     /**
      * Get payments by payment type.
@@ -83,6 +133,17 @@ public class PaymentService {
      */
     public List<Payment> getPaymentsByType(Payment.PaymentType paymentType) {
         return paymentRepository.findByPaymentType(paymentType);
+    }
+    
+    /**
+     * Get payment DTOs by payment type.
+     *
+     * @param paymentType The payment type
+     * @return List of payment DTOs of the type
+     */
+    public List<PaymentDTO> getPaymentDTOsByType(Payment.PaymentType paymentType) {
+        List<Payment> payments = getPaymentsByType(paymentType);
+        return dtoMapperService.toPaymentDTOList(payments);
     }
 
     /**
@@ -105,6 +166,21 @@ public class PaymentService {
         updateInvoiceStatus(invoice);
         
         return savedPayment;
+    }
+    
+    /**
+     * Register a payment for an invoice and return the DTO.
+     *
+     * @param invoiceId The invoice ID
+     * @param paymentDTO The payment DTO to register
+     * @return The registered payment DTO
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    @Transactional
+    public PaymentDTO registerPaymentDTO(Long invoiceId, PaymentDTO paymentDTO) {
+        Payment payment = dtoMapperService.toPaymentEntity(paymentDTO);
+        Payment savedPayment = registerPayment(invoiceId, payment);
+        return dtoMapperService.toPaymentDTO(savedPayment);
     }
 
     /**

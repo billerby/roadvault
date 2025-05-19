@@ -1,5 +1,6 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.InvoiceDTO;
 import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Billing;
 import com.billerby.roadvault.model.Invoice;
@@ -7,6 +8,7 @@ import com.billerby.roadvault.model.Property;
 import com.billerby.roadvault.repository.BillingRepository;
 import com.billerby.roadvault.repository.InvoiceRepository;
 import com.billerby.roadvault.repository.PropertyRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,17 +29,30 @@ public class InvoiceService {
     private final BillingRepository billingRepository;
     private final PropertyRepository propertyRepository;
     private final OcrService ocrService;
+    private final DTOMapperService dtoMapperService;
 
     @Autowired
     public InvoiceService(
             InvoiceRepository invoiceRepository,
             BillingRepository billingRepository,
             PropertyRepository propertyRepository,
-            OcrService ocrService) {
+            OcrService ocrService,
+            DTOMapperService dtoMapperService) {
         this.invoiceRepository = invoiceRepository;
         this.billingRepository = billingRepository;
         this.propertyRepository = propertyRepository;
         this.ocrService = ocrService;
+        this.dtoMapperService = dtoMapperService;
+    }
+
+    /**
+     * Get all invoices as DTOs.
+     *
+     * @return List of all invoice DTOs
+     */
+    public List<InvoiceDTO> getAllInvoiceDTOs() {
+        List<Invoice> invoices = invoiceRepository.findAll();
+        return dtoMapperService.toInvoiceDTOList(invoices);
     }
 
     /**
@@ -60,6 +75,18 @@ public class InvoiceService {
         return invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
     }
+    
+    /**
+     * Get an invoice DTO by ID.
+     *
+     * @param id The invoice ID
+     * @return The invoice DTO
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    public InvoiceDTO getInvoiceDTOById(Long id) {
+        Invoice invoice = getInvoiceById(id);
+        return dtoMapperService.toInvoiceDTO(invoice);
+    }
 
     /**
      * Get an invoice with details by ID.
@@ -72,6 +99,18 @@ public class InvoiceService {
         return invoiceRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with id: " + id));
     }
+    
+    /**
+     * Get an invoice with details by ID as a DTO.
+     *
+     * @param id The invoice ID
+     * @return The invoice DTO with details
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    public InvoiceDTO getInvoiceWithDetailsDTOById(Long id) {
+        Invoice invoice = getInvoiceWithDetailsById(id);
+        return dtoMapperService.toInvoiceDTO(invoice);
+    }
 
     /**
      * Get invoices by billing ID.
@@ -81,6 +120,17 @@ public class InvoiceService {
      */
     public List<Invoice> getInvoicesByBillingId(Long billingId) {
         return invoiceRepository.findByBillingId(billingId);
+    }
+    
+    /**
+     * Get invoice DTOs by billing ID.
+     *
+     * @param billingId The billing ID
+     * @return List of invoice DTOs for the billing
+     */
+    public List<InvoiceDTO> getInvoiceDTOsByBillingId(Long billingId) {
+        List<Invoice> invoices = getInvoicesByBillingId(billingId);
+        return dtoMapperService.toInvoiceDTOList(invoices);
     }
 
     /**
@@ -92,6 +142,17 @@ public class InvoiceService {
     public List<Invoice> getInvoicesByPropertyId(Long propertyId) {
         return invoiceRepository.findByPropertyId(propertyId);
     }
+    
+    /**
+     * Get invoice DTOs by property ID.
+     *
+     * @param propertyId The property ID
+     * @return List of invoice DTOs for the property
+     */
+    public List<InvoiceDTO> getInvoiceDTOsByPropertyId(Long propertyId) {
+        List<Invoice> invoices = getInvoicesByPropertyId(propertyId);
+        return dtoMapperService.toInvoiceDTOList(invoices);
+    }
 
     /**
      * Get invoices by status.
@@ -101,6 +162,17 @@ public class InvoiceService {
      */
     public List<Invoice> getInvoicesByStatus(Invoice.InvoiceStatus status) {
         return invoiceRepository.findByStatus(status);
+    }
+    
+    /**
+     * Get invoice DTOs by status.
+     *
+     * @param status The invoice status
+     * @return List of invoice DTOs with the status
+     */
+    public List<InvoiceDTO> getInvoiceDTOsByStatus(Invoice.InvoiceStatus status) {
+        List<Invoice> invoices = getInvoicesByStatus(status);
+        return dtoMapperService.toInvoiceDTOList(invoices);
     }
 
     /**
@@ -113,6 +185,18 @@ public class InvoiceService {
     public Invoice findInvoiceByOcr(String ocrNumber) {
         return invoiceRepository.findByOcrNumber(ocrNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found with OCR number: " + ocrNumber));
+    }
+    
+    /**
+     * Find invoice DTO by OCR number.
+     *
+     * @param ocrNumber The OCR number
+     * @return The invoice DTO if found
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    public InvoiceDTO findInvoiceDTOByOcr(String ocrNumber) {
+        Invoice invoice = findInvoiceByOcr(ocrNumber);
+        return dtoMapperService.toInvoiceDTO(invoice);
     }
 
     /**
@@ -185,6 +269,20 @@ public class InvoiceService {
         invoice.setStatus(status);
         return invoiceRepository.save(invoice);
     }
+    
+    /**
+     * Update invoice status and return DTO.
+     *
+     * @param id The invoice ID
+     * @param status The new status
+     * @return The updated invoice DTO
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    @Transactional
+    public InvoiceDTO updateInvoiceStatusDTO(Long id, Invoice.InvoiceStatus status) {
+        Invoice updatedInvoice = updateInvoiceStatus(id, status);
+        return dtoMapperService.toInvoiceDTO(updatedInvoice);
+    }
 
     /**
      * Mark invoice as sent.
@@ -204,6 +302,19 @@ public class InvoiceService {
         }
         
         return invoice;
+    }
+    
+    /**
+     * Mark invoice as sent and return DTO.
+     *
+     * @param id The invoice ID
+     * @return The updated invoice DTO
+     * @throws ResourceNotFoundException if invoice is not found
+     */
+    @Transactional
+    public InvoiceDTO markInvoiceAsSentDTO(Long id) {
+        Invoice updatedInvoice = markInvoiceAsSent(id);
+        return dtoMapperService.toInvoiceDTO(updatedInvoice);
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.billerby.roadvault.dto;
 
-import com.billerby.roadvault.model.Invoice;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -41,34 +39,6 @@ public class InvoiceDTO {
         this.invoiceNumber = invoiceNumber;
         this.ocrNumber = ocrNumber;
         this.status = status;
-    }
-    
-    // Factory method to create DTO from entity
-    public static InvoiceDTO fromEntity(Invoice invoice) {
-        InvoiceDTO dto = new InvoiceDTO();
-        dto.setId(invoice.getId());
-        
-        if (invoice.getBilling() != null) {
-            dto.setBillingId(invoice.getBilling().getId());
-            dto.setBillingDescription(invoice.getBilling().getDescription());
-        }
-        
-        if (invoice.getProperty() != null) {
-            dto.setPropertyId(invoice.getProperty().getId());
-            dto.setPropertyDesignation(invoice.getProperty().getPropertyDesignation());
-            
-            if (invoice.getProperty().getMainContact() != null) {
-                dto.setOwnerName(invoice.getProperty().getMainContact().getName());
-            }
-        }
-        
-        dto.setAmount(invoice.getAmount());
-        dto.setDueDate(invoice.getDueDate());
-        dto.setInvoiceNumber(invoice.getInvoiceNumber());
-        dto.setOcrNumber(invoice.getOcrNumber());
-        dto.setStatus(invoice.getStatus() != null ? invoice.getStatus().name() : null);
-        
-        return dto;
     }
     
     // Getters and Setters

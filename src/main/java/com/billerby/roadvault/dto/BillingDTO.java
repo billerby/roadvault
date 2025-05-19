@@ -1,7 +1,5 @@
 package com.billerby.roadvault.dto;
 
-import com.billerby.roadvault.model.Billing;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -35,25 +33,6 @@ public class BillingDTO {
         this.issueDate = issueDate;
         this.dueDate = dueDate;
         this.type = type;
-    }
-    
-    // Factory method to create DTO from entity
-    public static BillingDTO fromEntity(Billing billing) {
-        BillingDTO dto = new BillingDTO();
-        dto.setId(billing.getId());
-        dto.setYear(billing.getYear());
-        dto.setDescription(billing.getDescription());
-        dto.setTotalAmount(billing.getTotalAmount());
-        dto.setExtraCharge(billing.getExtraCharge());
-        dto.setIssueDate(billing.getIssueDate());
-        dto.setDueDate(billing.getDueDate());
-        dto.setType(billing.getType() != null ? billing.getType().name() : null);
-        
-        if (billing.getInvoices() != null) {
-            dto.setInvoiceCount(billing.getInvoices().size());
-        }
-        
-        return dto;
     }
     
     // Getters and Setters

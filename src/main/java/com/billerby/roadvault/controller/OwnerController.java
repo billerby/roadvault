@@ -35,10 +35,7 @@ public class OwnerController {
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<OwnerDTO>> getAllOwners() {
-        List<Owner> owners = ownerService.getAllOwners();
-        List<OwnerDTO> ownerDTOs = owners.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<OwnerDTO> ownerDTOs = ownerService.getAllOwnerDTOs();
         return ResponseEntity.ok(ownerDTOs);
     }
     
@@ -51,8 +48,8 @@ public class OwnerController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<OwnerDTO> getOwner(@PathVariable Long id) {
-        Owner owner = ownerService.getOwnerById(id);
-        return ResponseEntity.ok(convertToDTO(owner));
+        OwnerDTO ownerDTO = ownerService.getOwnerDTOById(id);
+        return ResponseEntity.ok(ownerDTO);
     }
     
     /**
@@ -64,8 +61,8 @@ public class OwnerController {
     @GetMapping("/{id}/with-properties")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<OwnerDTO> getOwnerWithProperties(@PathVariable Long id) {
-        Owner owner = ownerService.getOwnerWithPropertiesById(id);
-        return ResponseEntity.ok(convertToDTO(owner));
+        OwnerDTO ownerDTO = ownerService.getOwnerWithPropertiesDTOById(id);
+        return ResponseEntity.ok(ownerDTO);
     }
     
     /**
@@ -77,9 +74,8 @@ public class OwnerController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OwnerDTO> createOwner(@RequestBody OwnerDTO ownerDTO) {
-        Owner owner = convertToEntity(ownerDTO);
-        Owner createdOwner = ownerService.createOwner(owner);
-        return new ResponseEntity<>(convertToDTO(createdOwner), HttpStatus.CREATED);
+        OwnerDTO createdOwnerDTO = ownerService.createOwnerDTO(ownerDTO);
+        return new ResponseEntity<>(createdOwnerDTO, HttpStatus.CREATED);
     }
     
     /**
@@ -92,9 +88,8 @@ public class OwnerController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<OwnerDTO> updateOwner(@PathVariable Long id, @RequestBody OwnerDTO ownerDTO) {
-        Owner owner = convertToEntity(ownerDTO);
-        Owner updatedOwner = ownerService.updateOwner(id, owner);
-        return ResponseEntity.ok(convertToDTO(updatedOwner));
+        OwnerDTO updatedOwnerDTO = ownerService.updateOwnerDTO(id, ownerDTO);
+        return ResponseEntity.ok(updatedOwnerDTO);
     }
     
     /**
@@ -119,10 +114,7 @@ public class OwnerController {
     @GetMapping("/search")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<OwnerDTO>> searchOwnersByName(@RequestParam String name) {
-        List<Owner> owners = ownerService.searchOwnersByName(name);
-        List<OwnerDTO> ownerDTOs = owners.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<OwnerDTO> ownerDTOs = ownerService.searchOwnerDTOsByName(name);
         return ResponseEntity.ok(ownerDTOs);
     }
     
@@ -135,43 +127,9 @@ public class OwnerController {
     @GetMapping("/by-email")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<OwnerDTO> findOwnerByEmail(@RequestParam String email) {
-        Owner owner = ownerService.findOwnerByEmail(email);
-        return ResponseEntity.ok(convertToDTO(owner));
+        OwnerDTO ownerDTO = ownerService.findOwnerDTOByEmail(email);
+        return ResponseEntity.ok(ownerDTO);
     }
     
-    /**
-     * Convert an Owner entity to an OwnerDTO.
-     *
-     * @param owner the entity to convert
-     * @return the converted DTO
-     */
-    private OwnerDTO convertToDTO(Owner owner) {
-        OwnerDTO dto = new OwnerDTO();
-        dto.setId(owner.getId());
-        dto.setName(owner.getName());
-        dto.setEmail(owner.getEmail());
-        dto.setPhone(owner.getPhone());
-        dto.setAddress(owner.getAddress());
-        dto.setPostalCode(owner.getPostalCode());
-        dto.setCity(owner.getCity());
-        return dto;
-    }
-    
-    /**
-     * Convert an OwnerDTO to an Owner entity.
-     *
-     * @param dto the DTO to convert
-     * @return the converted entity
-     */
-    private Owner convertToEntity(OwnerDTO dto) {
-        Owner owner = new Owner();
-        owner.setId(dto.getId());
-        owner.setName(dto.getName());
-        owner.setEmail(dto.getEmail());
-        owner.setPhone(dto.getPhone());
-        owner.setAddress(dto.getAddress());
-        owner.setPostalCode(dto.getPostalCode());
-        owner.setCity(dto.getCity());
-        return owner;
-    }
+
 }

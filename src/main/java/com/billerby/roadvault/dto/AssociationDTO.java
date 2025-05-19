@@ -1,6 +1,5 @@
 package com.billerby.roadvault.dto;
 
-import com.billerby.roadvault.model.Association;
 import java.math.BigDecimal;
 
 /**
@@ -25,26 +24,6 @@ public class AssociationDTO {
     
     // Default constructor
     public AssociationDTO() {
-    }
-    
-    // Static factory method to create DTO from entity
-    public static AssociationDTO fromEntity(Association association) {
-        AssociationDTO dto = new AssociationDTO();
-        dto.setId(association.getId());
-        dto.setName(association.getName());
-        dto.setOrganizationNumber(association.getOrganizationNumber());
-        dto.setBankgiroNumber(association.getBankgiroNumber());
-        dto.setPlusgiroNumber(association.getPlusgiroNumber());
-        dto.setEmail(association.getEmail());
-        dto.setPhone(association.getPhone());
-        dto.setAddress(association.getAddress());
-        dto.setPostalCode(association.getPostalCode());
-        dto.setCity(association.getCity());
-        dto.setWebsite(association.getWebsite());
-        dto.setInvoiceText(association.getInvoiceText());
-        dto.setReminderDays(association.getReminderDays());
-        dto.setReminderFee(association.getReminderFee());
-        return dto;
     }
     
     // Getters and Setters

@@ -1,10 +1,12 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.PropertyDTO;
 import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Owner;
 import com.billerby.roadvault.model.Property;
 import com.billerby.roadvault.repository.OwnerRepository;
 import com.billerby.roadvault.repository.PropertyRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing properties.
@@ -21,11 +24,26 @@ public class PropertyService {
 
     private final PropertyRepository propertyRepository;
     private final OwnerRepository ownerRepository;
+    private final DTOMapperService dtoMapperService;
 
     @Autowired
-    public PropertyService(PropertyRepository propertyRepository, OwnerRepository ownerRepository) {
+    public PropertyService(
+            PropertyRepository propertyRepository, 
+            OwnerRepository ownerRepository,
+            DTOMapperService dtoMapperService) {
         this.propertyRepository = propertyRepository;
         this.ownerRepository = ownerRepository;
+        this.dtoMapperService = dtoMapperService;
+    }
+
+    /**
+     * Get all properties as DTOs.
+     *
+     * @return List of all property DTOs
+     */
+    public List<PropertyDTO> getAllPropertyDTOs() {
+        List<Property> properties = getAllProperties();
+        return dtoMapperService.toPropertyDTOList(properties);
     }
 
     /**
@@ -45,6 +63,16 @@ public class PropertyService {
     public List<Property> getAllPropertiesWithOwners() {
         return propertyRepository.findAllWithOwners();
     }
+    
+    /**
+     * Get all properties with their owners as DTOs.
+     *
+     * @return List of all property DTOs with owners
+     */
+    public List<PropertyDTO> getAllPropertiesWithOwnersDTOs() {
+        List<Property> properties = getAllPropertiesWithOwners();
+        return dtoMapperService.toPropertyDTOList(properties);
+    }
 
     /**
      * Get a property by ID.
@@ -56,6 +84,18 @@ public class PropertyService {
     public Property getPropertyById(Long id) {
         return propertyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+    }
+    
+    /**
+     * Get a property DTO by ID.
+     *
+     * @param id The property ID
+     * @return The property DTO
+     * @throws ResourceNotFoundException if property is not found
+     */
+    public PropertyDTO getPropertyDTOById(Long id) {
+        Property property = getPropertyById(id);
+        return dtoMapperService.toPropertyDTO(property);
     }
 
     /**
@@ -69,6 +109,18 @@ public class PropertyService {
         return propertyRepository.findByIdWithOwner(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
     }
+    
+    /**
+     * Get a property with its owners by ID as DTO.
+     *
+     * @param id The property ID
+     * @return The property DTO with owners
+     * @throws ResourceNotFoundException if property is not found
+     */
+    public PropertyDTO getPropertyWithOwnerDTOById(Long id) {
+        Property property = getPropertyWithOwnerById(id);
+        return dtoMapperService.toPropertyDTO(property);
+    }
 
     /**
      * Create a new property.
@@ -79,6 +131,19 @@ public class PropertyService {
     @Transactional
     public Property createProperty(Property property) {
         return propertyRepository.save(property);
+    }
+    
+    /**
+     * Create a new property from DTO.
+     *
+     * @param propertyDTO The property DTO to create
+     * @return The created property DTO
+     */
+    @Transactional
+    public PropertyDTO createPropertyDTO(PropertyDTO propertyDTO) {
+        Property property = dtoMapperService.toPropertyEntity(propertyDTO);
+        Property createdProperty = createProperty(property);
+        return dtoMapperService.toPropertyDTO(createdProperty);
     }
 
     /**
@@ -113,6 +178,36 @@ public class PropertyService {
         
         return propertyRepository.save(property);
     }
+    
+    /**
+     * Create a new property with owners and main contact from DTO.
+     *
+     * @param propertyDTO The property DTO to create
+     * @return The created property DTO
+     * @throws ResourceNotFoundException if any owner is not found
+     * @throws IllegalArgumentException if main contact is not in the owner list
+     */
+    @Transactional
+    public PropertyDTO createPropertyWithOwnersDTO(PropertyDTO propertyDTO) {
+        Property property = dtoMapperService.toPropertyEntity(propertyDTO);
+        
+        // Extract owner IDs and main contact ID
+        List<Long> ownerIds = null;
+        Long mainContactId = null;
+        
+        if (propertyDTO.getOwners() != null && !propertyDTO.getOwners().isEmpty()) {
+            ownerIds = propertyDTO.getOwners().stream()
+                    .map(ownerDTO -> ownerDTO.getId())
+                    .collect(Collectors.toList());
+        }
+        
+        if (propertyDTO.getMainContact() != null) {
+            mainContactId = propertyDTO.getMainContact().getId();
+        }
+        
+        Property createdProperty = createPropertyWithOwners(property, ownerIds, mainContactId);
+        return dtoMapperService.toPropertyDTO(createdProperty);
+    }
 
     /**
      * Update a property.
@@ -132,6 +227,36 @@ public class PropertyService {
         property.setAddress(propertyDetails.getAddress());
         
         return propertyRepository.save(property);
+    }
+    
+    /**
+     * Update a property from DTO.
+     *
+     * @param id The property ID
+     * @param propertyDTO The updated property DTO
+     * @return The updated property DTO
+     * @throws ResourceNotFoundException if property is not found
+     */
+    @Transactional
+    public PropertyDTO updatePropertyDTO(Long id, PropertyDTO propertyDTO) {
+        Property propertyDetails = dtoMapperService.toPropertyEntity(propertyDTO);
+        Property updatedProperty = updateProperty(id, propertyDetails);
+        
+        // Update owners if provided
+        if (propertyDTO.getOwners() != null) {
+            List<Long> ownerIds = propertyDTO.getOwners().stream()
+                    .map(ownerDTO -> ownerDTO.getId())
+                    .collect(Collectors.toList());
+            
+            updatedProperty = updateOwners(id, ownerIds);
+        }
+        
+        // Update main contact if provided
+        if (propertyDTO.getMainContact() != null) {
+            updatedProperty = setMainContact(id, propertyDTO.getMainContact().getId());
+        }
+        
+        return dtoMapperService.toPropertyDTO(updatedProperty);
     }
 
     /**
@@ -156,6 +281,17 @@ public class PropertyService {
      */
     public List<Property> searchPropertiesByDesignation(String designation) {
         return propertyRepository.findByPropertyDesignationContainingIgnoreCase(designation);
+    }
+    
+    /**
+     * Search properties by designation and return DTOs.
+     *
+     * @param designation The property designation to search for
+     * @return List of matching property DTOs
+     */
+    public List<PropertyDTO> searchPropertiesDTOsByDesignation(String designation) {
+        List<Property> properties = searchPropertiesByDesignation(designation);
+        return dtoMapperService.toPropertyDTOList(properties);
     }
 
     /**
@@ -189,6 +325,20 @@ public class PropertyService {
         property.addOwner(owner);
         return propertyRepository.save(property);
     }
+    
+    /**
+     * Add an owner to a property and return DTO.
+     *
+     * @param propertyId The property ID
+     * @param ownerId The owner ID to add
+     * @return The updated property DTO
+     * @throws ResourceNotFoundException if property or owner is not found
+     */
+    @Transactional
+    public PropertyDTO addOwnerDTO(Long propertyId, Long ownerId) {
+        Property updatedProperty = addOwner(propertyId, ownerId);
+        return dtoMapperService.toPropertyDTO(updatedProperty);
+    }
 
     /**
      * Remove an owner from a property.
@@ -215,6 +365,21 @@ public class PropertyService {
         property.removeOwner(owner);
         return propertyRepository.save(property);
     }
+    
+    /**
+     * Remove an owner from a property and return DTO.
+     *
+     * @param propertyId The property ID
+     * @param ownerId The owner ID to remove
+     * @return The updated property DTO
+     * @throws ResourceNotFoundException if property or owner is not found
+     * @throws IllegalStateException if trying to remove the only owner
+     */
+    @Transactional
+    public PropertyDTO removeOwnerDTO(Long propertyId, Long ownerId) {
+        Property updatedProperty = removeOwner(propertyId, ownerId);
+        return dtoMapperService.toPropertyDTO(updatedProperty);
+    }
 
     /**
      * Set the main contact for a property.
@@ -235,6 +400,21 @@ public class PropertyService {
         
         property.setMainContactWithCheck(owner);
         return propertyRepository.save(property);
+    }
+    
+    /**
+     * Set the main contact for a property and return DTO.
+     *
+     * @param propertyId The property ID
+     * @param ownerId The owner ID to set as main contact
+     * @return The updated property DTO
+     * @throws ResourceNotFoundException if property or owner is not found
+     * @throws IllegalArgumentException if the owner is not associated with the property
+     */
+    @Transactional
+    public PropertyDTO setMainContactDTO(Long propertyId, Long ownerId) {
+        Property updatedProperty = setMainContact(propertyId, ownerId);
+        return dtoMapperService.toPropertyDTO(updatedProperty);
     }
     
     /**
@@ -268,5 +448,19 @@ public class PropertyService {
         }
         
         return propertyRepository.save(property);
+    }
+    
+    /**
+     * Update owners for a property and return DTO.
+     *
+     * @param propertyId The property ID
+     * @param ownerIds The list of owner IDs
+     * @return The updated property DTO
+     * @throws ResourceNotFoundException if property or any owner is not found
+     */
+    @Transactional
+    public PropertyDTO updateOwnersDTO(Long propertyId, List<Long> ownerIds) {
+        Property updatedProperty = updateOwners(propertyId, ownerIds);
+        return dtoMapperService.toPropertyDTO(updatedProperty);
     }
 }

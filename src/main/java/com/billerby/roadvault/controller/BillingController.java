@@ -39,10 +39,7 @@ public class BillingController {
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BillingDTO>> getAllBillings() {
-        List<Billing> billings = billingService.getAllBillings();
-        List<BillingDTO> billingDTOs = billings.stream()
-                .map(BillingDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<BillingDTO> billingDTOs = billingService.getAllBillingDTOs();
         return ResponseEntity.ok(billingDTOs);
     }
     
@@ -55,8 +52,8 @@ public class BillingController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BillingDTO> getBilling(@PathVariable Long id) {
-        Billing billing = billingService.getBillingById(id);
-        return ResponseEntity.ok(BillingDTO.fromEntity(billing));
+        BillingDTO billingDTO = billingService.getBillingDTOById(id);
+        return ResponseEntity.ok(billingDTO);
     }
     
     /**
@@ -68,8 +65,8 @@ public class BillingController {
     @GetMapping("/{id}/with-invoices")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BillingDTO> getBillingWithInvoices(@PathVariable Long id) {
-        Billing billing = billingService.getBillingWithInvoicesById(id);
-        return ResponseEntity.ok(BillingDTO.fromEntity(billing));
+        BillingDTO billingDTO = billingService.getBillingWithInvoicesDTOById(id);
+        return ResponseEntity.ok(billingDTO);
     }
     
     /**
@@ -81,10 +78,7 @@ public class BillingController {
     @GetMapping("/{id}/invoices")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<InvoiceDTO>> getInvoicesForBilling(@PathVariable Long id) {
-        List<Invoice> invoices = invoiceService.getInvoicesByBillingId(id);
-        List<InvoiceDTO> invoiceDTOs = invoices.stream()
-                .map(InvoiceDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<InvoiceDTO> invoiceDTOs = invoiceService.getInvoiceDTOsByBillingId(id);
         return ResponseEntity.ok(invoiceDTOs);
     }
     
@@ -97,10 +91,7 @@ public class BillingController {
     @GetMapping("/by-year")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BillingDTO>> getBillingsByYear(@RequestParam Integer year) {
-        List<Billing> billings = billingService.getBillingsByYear(year);
-        List<BillingDTO> billingDTOs = billings.stream()
-                .map(BillingDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<BillingDTO> billingDTOs = billingService.getBillingDTOsByYear(year);
         return ResponseEntity.ok(billingDTOs);
     }
     
@@ -117,10 +108,8 @@ public class BillingController {
             @RequestBody BillingDTO billingDTO,
             @RequestParam(defaultValue = "false") boolean generateInvoices) {
         
-        Billing billing = convertToEntity(billingDTO);
-        Billing createdBilling = billingService.createBillingWithInvoices(billing, generateInvoices);
-        
-        return new ResponseEntity<>(BillingDTO.fromEntity(createdBilling), HttpStatus.CREATED);
+        BillingDTO createdBillingDTO = billingService.createBillingWithInvoicesDTO(billingDTO, generateInvoices);
+        return new ResponseEntity<>(createdBillingDTO, HttpStatus.CREATED);
     }
     
     /**
@@ -136,10 +125,8 @@ public class BillingController {
             @PathVariable Long id,
             @RequestBody BillingDTO billingDTO) {
         
-        Billing billing = convertToEntity(billingDTO);
-        Billing updatedBilling = billingService.updateBilling(id, billing);
-        
-        return ResponseEntity.ok(BillingDTO.fromEntity(updatedBilling));
+        BillingDTO updatedBillingDTO = billingService.updateBillingDTO(id, billingDTO);
+        return ResponseEntity.ok(updatedBillingDTO);
     }
     
     /**
@@ -164,38 +151,12 @@ public class BillingController {
     @PostMapping("/{id}/generate-invoices")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<InvoiceDTO>> generateInvoices(@PathVariable Long id) {
+        // Note: Since we're calling directly to the invoiceService, we'll need a DTO version there
+        // Assuming InvoiceService has a generateInvoicesForBillingDTO method
         List<Invoice> invoices = invoiceService.generateInvoicesForBilling(id);
-        List<InvoiceDTO> invoiceDTOs = invoices.stream()
-                .map(InvoiceDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<InvoiceDTO> invoiceDTOs = invoiceService.getInvoiceDTOsByBillingId(id);
         return ResponseEntity.ok(invoiceDTOs);
     }
     
-    /**
-     * Convert a BillingDTO to a Billing entity.
-     *
-     * @param dto the DTO to convert
-     * @return the converted entity
-     */
-    private Billing convertToEntity(BillingDTO dto) {
-        Billing billing = new Billing();
-        billing.setId(dto.getId());
-        billing.setYear(dto.getYear());
-        billing.setDescription(dto.getDescription());
-        billing.setTotalAmount(dto.getTotalAmount());
-        billing.setExtraCharge(dto.getExtraCharge());
-        billing.setIssueDate(dto.getIssueDate());
-        billing.setDueDate(dto.getDueDate());
-        
-        if (dto.getType() != null) {
-            try {
-                billing.setType(Billing.BillingType.valueOf(dto.getType()));
-            } catch (IllegalArgumentException e) {
-                // Use default type if invalid
-                billing.setType(Billing.BillingType.ANNUAL_FEE);
-            }
-        }
-        
-        return billing;
-    }
+
 }

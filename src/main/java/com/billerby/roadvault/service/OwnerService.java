@@ -1,13 +1,16 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.OwnerDTO;
 import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Owner;
 import com.billerby.roadvault.repository.OwnerRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing property owners.
@@ -16,10 +19,22 @@ import java.util.List;
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
+    private final DTOMapperService dtoMapperService;
 
     @Autowired
-    public OwnerService(OwnerRepository ownerRepository) {
+    public OwnerService(OwnerRepository ownerRepository, DTOMapperService dtoMapperService) {
         this.ownerRepository = ownerRepository;
+        this.dtoMapperService = dtoMapperService;
+    }
+
+    /**
+     * Get all owners as DTOs.
+     *
+     * @return List of all owner DTOs
+     */
+    public List<OwnerDTO> getAllOwnerDTOs() {
+        List<Owner> owners = getAllOwners();
+        return dtoMapperService.toOwnerDTOList(owners);
     }
 
     /**
@@ -42,6 +57,18 @@ public class OwnerService {
         return ownerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + id));
     }
+    
+    /**
+     * Get an owner DTO by ID.
+     *
+     * @param id The owner ID
+     * @return The owner DTO
+     * @throws ResourceNotFoundException if owner is not found
+     */
+    public OwnerDTO getOwnerDTOById(Long id) {
+        Owner owner = getOwnerById(id);
+        return dtoMapperService.toOwnerDTO(owner);
+    }
 
     /**
      * Get an owner with properties by ID.
@@ -54,6 +81,18 @@ public class OwnerService {
         return ownerRepository.findByIdWithProperties(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with id: " + id));
     }
+    
+    /**
+     * Get an owner with properties by ID as DTO.
+     *
+     * @param id The owner ID
+     * @return The owner DTO with properties
+     * @throws ResourceNotFoundException if owner is not found
+     */
+    public OwnerDTO getOwnerWithPropertiesDTOById(Long id) {
+        Owner owner = getOwnerWithPropertiesById(id);
+        return dtoMapperService.toOwnerDTO(owner);
+    }
 
     /**
      * Create a new owner.
@@ -64,6 +103,19 @@ public class OwnerService {
     @Transactional
     public Owner createOwner(Owner owner) {
         return ownerRepository.save(owner);
+    }
+    
+    /**
+     * Create a new owner from DTO.
+     *
+     * @param ownerDTO The owner DTO to create
+     * @return The created owner DTO
+     */
+    @Transactional
+    public OwnerDTO createOwnerDTO(OwnerDTO ownerDTO) {
+        Owner owner = dtoMapperService.toOwnerEntity(ownerDTO);
+        Owner createdOwner = createOwner(owner);
+        return dtoMapperService.toOwnerDTO(createdOwner);
     }
 
     /**
@@ -87,6 +139,21 @@ public class OwnerService {
         owner.setCity(ownerDetails.getCity());
         
         return ownerRepository.save(owner);
+    }
+    
+    /**
+     * Update an owner from DTO.
+     *
+     * @param id The owner ID
+     * @param ownerDTO The updated owner DTO
+     * @return The updated owner DTO
+     * @throws ResourceNotFoundException if owner is not found
+     */
+    @Transactional
+    public OwnerDTO updateOwnerDTO(Long id, OwnerDTO ownerDTO) {
+        Owner ownerDetails = dtoMapperService.toOwnerEntity(ownerDTO);
+        Owner updatedOwner = updateOwner(id, ownerDetails);
+        return dtoMapperService.toOwnerDTO(updatedOwner);
     }
 
     /**
@@ -117,6 +184,17 @@ public class OwnerService {
     public List<Owner> searchOwnersByName(String name) {
         return ownerRepository.findByNameContainingIgnoreCase(name);
     }
+    
+    /**
+     * Search owners by name and return DTOs.
+     *
+     * @param name The name to search for
+     * @return List of matching owner DTOs
+     */
+    public List<OwnerDTO> searchOwnerDTOsByName(String name) {
+        List<Owner> owners = searchOwnersByName(name);
+        return dtoMapperService.toOwnerDTOList(owners);
+    }
 
     /**
      * Find owner by email.
@@ -127,5 +205,16 @@ public class OwnerService {
     public Owner findOwnerByEmail(String email) {
         return ownerRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Owner not found with email: " + email));
+    }
+    
+    /**
+     * Find owner by email and return DTO.
+     *
+     * @param email The email to search for
+     * @return The owner DTO if found
+     */
+    public OwnerDTO findOwnerDTOByEmail(String email) {
+        Owner owner = findOwnerByEmail(email);
+        return dtoMapperService.toOwnerDTO(owner);
     }
 }

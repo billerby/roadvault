@@ -39,10 +39,7 @@ public class InvoiceController {
     @GetMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<InvoiceDTO>> getAllInvoices() {
-        List<Invoice> invoices = invoiceService.getAllInvoices();
-        List<InvoiceDTO> invoiceDTOs = invoices.stream()
-                .map(InvoiceDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<InvoiceDTO> invoiceDTOs = invoiceService.getAllInvoiceDTOs();
         return ResponseEntity.ok(invoiceDTOs);
     }
     
@@ -55,8 +52,8 @@ public class InvoiceController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<InvoiceDTO> getInvoice(@PathVariable Long id) {
-        Invoice invoice = invoiceService.getInvoiceWithDetailsById(id);
-        return ResponseEntity.ok(InvoiceDTO.fromEntity(invoice));
+        InvoiceDTO invoiceDTO = invoiceService.getInvoiceWithDetailsDTOById(id);
+        return ResponseEntity.ok(invoiceDTO);
     }
     
     /**
@@ -68,10 +65,7 @@ public class InvoiceController {
     @GetMapping("/by-property/{propertyId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<InvoiceDTO>> getInvoicesByProperty(@PathVariable Long propertyId) {
-        List<Invoice> invoices = invoiceService.getInvoicesByPropertyId(propertyId);
-        List<InvoiceDTO> invoiceDTOs = invoices.stream()
-                .map(InvoiceDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<InvoiceDTO> invoiceDTOs = invoiceService.getInvoiceDTOsByPropertyId(propertyId);
         return ResponseEntity.ok(invoiceDTOs);
     }
     
@@ -86,10 +80,7 @@ public class InvoiceController {
     public ResponseEntity<List<InvoiceDTO>> getInvoicesByStatus(@RequestParam String status) {
         try {
             Invoice.InvoiceStatus invoiceStatus = Invoice.InvoiceStatus.valueOf(status.toUpperCase());
-            List<Invoice> invoices = invoiceService.getInvoicesByStatus(invoiceStatus);
-            List<InvoiceDTO> invoiceDTOs = invoices.stream()
-                    .map(InvoiceDTO::fromEntity)
-                    .collect(Collectors.toList());
+            List<InvoiceDTO> invoiceDTOs = invoiceService.getInvoiceDTOsByStatus(invoiceStatus);
             return ResponseEntity.ok(invoiceDTOs);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -105,8 +96,8 @@ public class InvoiceController {
     @GetMapping("/by-ocr")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<InvoiceDTO> findInvoiceByOcr(@RequestParam String ocrNumber) {
-        Invoice invoice = invoiceService.findInvoiceByOcr(ocrNumber);
-        return ResponseEntity.ok(InvoiceDTO.fromEntity(invoice));
+        InvoiceDTO invoiceDTO = invoiceService.findInvoiceDTOByOcr(ocrNumber);
+        return ResponseEntity.ok(invoiceDTO);
     }
     
     /**
@@ -124,8 +115,8 @@ public class InvoiceController {
         
         try {
             Invoice.InvoiceStatus invoiceStatus = Invoice.InvoiceStatus.valueOf(status.toUpperCase());
-            Invoice updatedInvoice = invoiceService.updateInvoiceStatus(id, invoiceStatus);
-            return ResponseEntity.ok(InvoiceDTO.fromEntity(updatedInvoice));
+            InvoiceDTO updatedInvoiceDTO = invoiceService.updateInvoiceStatusDTO(id, invoiceStatus);
+            return ResponseEntity.ok(updatedInvoiceDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -140,8 +131,8 @@ public class InvoiceController {
     @PutMapping("/{id}/mark-as-sent")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InvoiceDTO> markInvoiceAsSent(@PathVariable Long id) {
-        Invoice updatedInvoice = invoiceService.markInvoiceAsSent(id);
-        return ResponseEntity.ok(InvoiceDTO.fromEntity(updatedInvoice));
+        InvoiceDTO updatedInvoiceDTO = invoiceService.markInvoiceAsSentDTO(id);
+        return ResponseEntity.ok(updatedInvoiceDTO);
     }
     
     /**
@@ -165,10 +156,7 @@ public class InvoiceController {
     @GetMapping("/{id}/payments")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<PaymentDTO>> getPaymentsForInvoice(@PathVariable Long id) {
-        List<Payment> payments = paymentService.getPaymentsByInvoiceId(id);
-        List<PaymentDTO> paymentDTOs = payments.stream()
-                .map(PaymentDTO::fromEntity)
-                .collect(Collectors.toList());
+        List<PaymentDTO> paymentDTOs = paymentService.getPaymentDTOsByInvoiceId(id);
         return ResponseEntity.ok(paymentDTOs);
     }
     
@@ -185,36 +173,8 @@ public class InvoiceController {
             @PathVariable Long id,
             @RequestBody PaymentDTO paymentDTO) {
         
-        Payment payment = convertToPaymentEntity(paymentDTO);
-        Payment registeredPayment = paymentService.registerPayment(id, payment);
-        
-        return new ResponseEntity<>(PaymentDTO.fromEntity(registeredPayment), HttpStatus.CREATED);
+        PaymentDTO registeredPaymentDTO = paymentService.registerPaymentDTO(id, paymentDTO);
+        return new ResponseEntity<>(registeredPaymentDTO, HttpStatus.CREATED);
     }
-    
-    /**
-     * Convert a PaymentDTO to a Payment entity.
-     *
-     * @param dto the DTO to convert
-     * @return the converted entity
-     */
-    private Payment convertToPaymentEntity(PaymentDTO dto) {
-        Payment payment = new Payment();
-        payment.setId(dto.getId());
-        payment.setAmount(dto.getAmount());
-        payment.setPaymentDate(dto.getPaymentDate());
-        payment.setComment(dto.getComment());
-        
-        if (dto.getPaymentType() != null) {
-            try {
-                payment.setPaymentType(Payment.PaymentType.valueOf(dto.getPaymentType()));
-            } catch (IllegalArgumentException e) {
-                // Use default type if invalid
-                payment.setPaymentType(Payment.PaymentType.MANUAL);
-            }
-        } else {
-            payment.setPaymentType(Payment.PaymentType.MANUAL);
-        }
-        
-        return payment;
-    }
+
 }

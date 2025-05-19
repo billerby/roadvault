@@ -1,7 +1,5 @@
 package com.billerby.roadvault.dto;
 
-import com.billerby.roadvault.model.Payment;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -32,24 +30,6 @@ public class PaymentDTO {
         this.paymentDate = paymentDate;
         this.comment = comment;
         this.paymentType = paymentType;
-    }
-    
-    // Factory method to create DTO from entity
-    public static PaymentDTO fromEntity(Payment payment) {
-        PaymentDTO dto = new PaymentDTO();
-        dto.setId(payment.getId());
-        
-        if (payment.getInvoice() != null) {
-            dto.setInvoiceId(payment.getInvoice().getId());
-            dto.setInvoiceNumber(payment.getInvoice().getInvoiceNumber());
-        }
-        
-        dto.setAmount(payment.getAmount());
-        dto.setPaymentDate(payment.getPaymentDate());
-        dto.setComment(payment.getComment());
-        dto.setPaymentType(payment.getPaymentType() != null ? payment.getPaymentType().name() : null);
-        
-        return dto;
     }
     
     // Getters and Setters

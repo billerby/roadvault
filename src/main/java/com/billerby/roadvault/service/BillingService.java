@@ -1,13 +1,16 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.BillingDTO;
 import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Billing;
 import com.billerby.roadvault.repository.BillingRepository;
+import com.billerby.roadvault.service.mapper.DTOMapperService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for managing billings.
@@ -17,11 +20,26 @@ public class BillingService {
 
     private final BillingRepository billingRepository;
     private final InvoiceService invoiceService;
+    private final DTOMapperService dtoMapperService;
 
     @Autowired
-    public BillingService(BillingRepository billingRepository, InvoiceService invoiceService) {
+    public BillingService(
+            BillingRepository billingRepository, 
+            InvoiceService invoiceService,
+            DTOMapperService dtoMapperService) {
         this.billingRepository = billingRepository;
         this.invoiceService = invoiceService;
+        this.dtoMapperService = dtoMapperService;
+    }
+
+    /**
+     * Get all billings as DTOs.
+     *
+     * @return List of all billing DTOs
+     */
+    public List<BillingDTO> getAllBillingDTOs() {
+        List<Billing> billings = getAllBillings();
+        return dtoMapperService.toBillingDTOList(billings);
     }
 
     /**
@@ -44,6 +62,18 @@ public class BillingService {
         return billingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Billing not found with id: " + id));
     }
+    
+    /**
+     * Get a billing DTO by ID.
+     *
+     * @param id The billing ID
+     * @return The billing DTO
+     * @throws ResourceNotFoundException if billing is not found
+     */
+    public BillingDTO getBillingDTOById(Long id) {
+        Billing billing = getBillingById(id);
+        return dtoMapperService.toBillingDTO(billing);
+    }
 
     /**
      * Get a billing with invoices by ID.
@@ -55,6 +85,18 @@ public class BillingService {
     public Billing getBillingWithInvoicesById(Long id) {
         return billingRepository.findByIdWithInvoices(id);
     }
+    
+    /**
+     * Get a billing with invoices by ID as DTO.
+     *
+     * @param id The billing ID
+     * @return The billing DTO with invoices
+     * @throws ResourceNotFoundException if billing is not found
+     */
+    public BillingDTO getBillingWithInvoicesDTOById(Long id) {
+        Billing billing = getBillingWithInvoicesById(id);
+        return dtoMapperService.toBillingDTO(billing);
+    }
 
     /**
      * Get billings by year.
@@ -64,6 +106,17 @@ public class BillingService {
      */
     public List<Billing> getBillingsByYear(Integer year) {
         return billingRepository.findByYear(year);
+    }
+    
+    /**
+     * Get billing DTOs by year.
+     *
+     * @param year The year
+     * @return List of billing DTOs for the year
+     */
+    public List<BillingDTO> getBillingDTOsByYear(Integer year) {
+        List<Billing> billings = getBillingsByYear(year);
+        return dtoMapperService.toBillingDTOList(billings);
     }
 
     /**
@@ -76,6 +129,18 @@ public class BillingService {
     public List<Billing> getBillingsByYearAndType(Integer year, Billing.BillingType type) {
         return billingRepository.findByYearAndType(year, type);
     }
+    
+    /**
+     * Get billing DTOs by year and type.
+     *
+     * @param year The year
+     * @param type The billing type
+     * @return List of billing DTOs for the year and type
+     */
+    public List<BillingDTO> getBillingDTOsByYearAndType(Integer year, Billing.BillingType type) {
+        List<Billing> billings = getBillingsByYearAndType(year, type);
+        return dtoMapperService.toBillingDTOList(billings);
+    }
 
     /**
      * Create a new billing.
@@ -86,6 +151,19 @@ public class BillingService {
     @Transactional
     public Billing createBilling(Billing billing) {
         return billingRepository.save(billing);
+    }
+    
+    /**
+     * Create a new billing from DTO.
+     *
+     * @param billingDTO The billing DTO to create
+     * @return The created billing DTO
+     */
+    @Transactional
+    public BillingDTO createBillingDTO(BillingDTO billingDTO) {
+        Billing billing = dtoMapperService.toBillingEntity(billingDTO);
+        Billing createdBilling = createBilling(billing);
+        return dtoMapperService.toBillingDTO(createdBilling);
     }
 
     /**
@@ -104,6 +182,20 @@ public class BillingService {
         }
         
         return getBillingWithInvoicesById(createdBilling.getId());
+    }
+    
+    /**
+     * Create a new billing and generate invoices from DTO.
+     *
+     * @param billingDTO The billing DTO to create
+     * @param generateInvoices Whether to generate invoices
+     * @return The created billing DTO
+     */
+    @Transactional
+    public BillingDTO createBillingWithInvoicesDTO(BillingDTO billingDTO, boolean generateInvoices) {
+        Billing billing = dtoMapperService.toBillingEntity(billingDTO);
+        Billing createdBilling = createBillingWithInvoices(billing, generateInvoices);
+        return dtoMapperService.toBillingDTO(createdBilling);
     }
 
     /**
@@ -128,6 +220,21 @@ public class BillingService {
         billing.setType(billingDetails.getType());
         
         return billingRepository.save(billing);
+    }
+    
+    /**
+     * Update a billing from DTO.
+     *
+     * @param id The billing ID
+     * @param billingDTO The updated billing DTO
+     * @return The updated billing DTO
+     * @throws ResourceNotFoundException if billing is not found
+     */
+    @Transactional
+    public BillingDTO updateBillingDTO(Long id, BillingDTO billingDTO) {
+        Billing billingDetails = dtoMapperService.toBillingEntity(billingDTO);
+        Billing updatedBilling = updateBilling(id, billingDetails);
+        return dtoMapperService.toBillingDTO(updatedBilling);
     }
 
     /**
