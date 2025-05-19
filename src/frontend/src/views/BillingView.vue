@@ -5,13 +5,13 @@
       <p class="subtitle-1">Här kan du skapa och hantera utdebiteringar för föreningen</p>
     </div>
 <!-- Lista över befintliga utdebiteringar -->
-<v-card class="mb-golden elevation-2">
-  <v-card-title class="d-flex align-center">
+<v-card class="rv-card rv-mb-md">
+  <v-card-title class="rv-card-header">
     <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-cash-multiple</v-icon>
     <span class="text-h5">Befintliga utdebiteringar</span>
     <v-spacer></v-spacer>
     <v-btn
-      class="action-btn add-btn"
+      class="rv-btn-icon rv-btn--primary"
       @click="openNewBillingDialog"
       title="Lägg till ny utdebitering"
     >
@@ -20,13 +20,13 @@
   </v-card-title>
   <v-divider></v-divider>
   
-  <v-card-text class="pa-golden">
+  <v-card-text class="rv-p-md">
     <v-data-table
       :headers="billingHeaders"
       :items="billings"
       :loading="loading"
       :items-per-page="10"
-      class="elevation-0 custom-table"
+       class="rv-table"
     >
       <template v-slot:item.year="{ item }">
         <strong>{{ item.year }}</strong>
@@ -57,11 +57,11 @@
       </template>
       
       <template v-slot:item.actions="{ item }">
-        <div class="actions-container">
+        <div class="rv-actions-container">
           <v-tooltip bottom>
             <template v-slot:activator="{ props }">
               <v-btn 
-                class="action-btn-rounded mr-1"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                 color="primary"
                 icon
                 small
@@ -77,7 +77,7 @@
           <v-tooltip bottom v-if="item.invoiceCount === 0">
             <template v-slot:activator="{ props }">
               <v-btn 
-                class="action-btn-rounded mr-1"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                 color="accent"
                 icon
                 small
@@ -93,7 +93,7 @@
           <v-tooltip bottom v-else>
             <template v-slot:activator="{ props }">
               <v-btn 
-                class="action-btn-rounded mr-1"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                 color="accent"
                 icon
                 small
@@ -109,7 +109,7 @@
           <v-tooltip bottom v-if="item.invoiceCount === 0">
             <template v-slot:activator="{ props }">
               <v-btn 
-                class="action-btn-rounded"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                 color="secondary"
                 icon
                 small
@@ -125,12 +125,12 @@
       </template>
       
       <template v-slot:no-data>
-        <div class="empty-state text-center pa-golden">
+        <div class="rv-empty-state text-center rv-p-md">
           <v-icon size="64" color="grey lighten-1">mdi-cash-remove</v-icon>
           <p class="mt-4">Inga utdebiteringar har skapats än.</p>
           <v-btn 
             color="var(--color-primary-light)"
-            class="mt-4 primary-action-btn"
+            class="mt-4 rv-btn rv-btn--primary"
             @click="openNewBillingDialog"
           >
             <v-icon left>mdi-plus</v-icon>
@@ -143,13 +143,13 @@
 </v-card>
 
 <!-- Förklaring om utdebiteringar och delaktighetstal -->
-<v-card class="mb-golden elevation-1">
-  <v-card-title class="d-flex align-center">
+<v-card class="rv-mb-md elevation-1">
+  <v-card-title class="rv-card-header">
     <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-information-outline</v-icon>
     <span class="text-h6">Om utdebiteringar</span>
   </v-card-title>
   <v-divider></v-divider>
-  <v-card-text class="pa-golden">
+  <v-card-text class="rv-p-md">
     <p>
       Utdebiteringar skapas baserat på delaktighetstal. 
       Systemet beräknar varje fastighets andel av den totala kostnaden enligt formeln:
@@ -174,8 +174,8 @@
 
 <!-- Dialog för att skapa/redigera utdebitering -->
 <v-dialog v-model="billingDialog" max-width="700px">
-  <v-card class="dialog-card">
-    <v-card-title class="text-h5 dialog-title">
+  <v-card class="rv-dialog">
+    <v-card-title class="rv-dialog-header">
       <v-icon color="var(--color-primary-dark)" class="mr-2">
         {{ editedBilling.id ? 'mdi-pencil' : 'mdi-cash-plus' }}
       </v-icon>
@@ -183,7 +183,7 @@
     </v-card-title>
     <v-divider></v-divider>
     
-    <v-card-text class="pa-golden">
+    <v-card-text class="rv-p-md">
       <v-form ref="form" v-model="valid" lazy-validation>
         <v-row>
           <v-col cols="12" sm="6">
@@ -351,7 +351,7 @@
             :disabled="!valid"
             @click="saveBilling"
             :loading="loading"
-            class="primary-action-btn"
+            class="rv-btn rv-btn--primary"
           >
             <v-icon left>mdi-content-save</v-icon>
             Spara
@@ -367,7 +367,7 @@
   <v-card>
     <v-card-title class="text-h5">Bekräfta åtgärd</v-card-title>
     <v-divider></v-divider>
-    <v-card-text class="pa-golden">
+    <v-card-text class="rv-p-md">
       <p>Är du säker på att du vill generera fakturor för denna utdebitering?</p>
       <p class="mt-2">Detta kommer att:</p>
       <ul>
@@ -392,7 +392,7 @@
             color="var(--color-primary-light)"
             @click="confirmGenerateInvoices"
             :loading="loading"
-            class="primary-action-btn"
+            class="rv-btn rv-btn--primary"
           >
             <v-icon left>mdi-check</v-icon>
             Generera fakturor
@@ -725,132 +725,8 @@ export default {
   color: white !important;
 }
 
-/* Action buttons in header */
-.action-btn {
-  width: 40px;
-  height: 40px;
-  min-width: 0;
-  border-radius: 20px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-  background-color: var(--color-primary-light) !important;
-  color: white !important;
-}
 
-.action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
-.action-btn:hover::before {
-  opacity: 1;
-}
-
-.action-btn .action-icon {
-  font-size: 18px;
-  transition: transform 0.3s ease;
-}
-
-.action-btn:hover .action-icon {
-  transform: scale(1.15);
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Table rounded action buttons - new style */
-.action-btn-rounded {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.2s ease;
-  border-radius: 50%;
-  width: 32px !important;
-  height: 32px !important;
-  margin: 0 2px;
-}
-
-.action-btn-rounded:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  transform: translateY(-2px);
-}
-
-.action-btn-rounded:active {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(0);
-}
-
-.action-btn-rounded .v-icon {
-  font-size: 16px;
-}
-
-.actions-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-/* Primary action buttons */
-.primary-action-btn {
-  height: 42px;
-  border-radius: var(--button-border-radius) !important;
-  padding: 0 24px !important;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease !important;
-  
-  color: white !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
-  line-height: 42px !important;
-}
-
-.primary-action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.primary-action-btn:hover::before {
-  opacity: 1;
-}
-
-.primary-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.primary-action-btn:active {
-  transform: translateY(0);
-}
 
 .divisor {
   display: inline-block;
@@ -882,30 +758,10 @@ export default {
   margin-top: 4px;
 }
 
-.pa-golden {
-  padding: 16px;
-}
-
-.mb-golden {
-  margin-bottom: 16px;
-}
 
 .custom-table {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.empty-state {
-  color: grey;
-  font-size: 14px;
-}
-
-.dialog-card {
-  padding: 16px;
-}
-
-.dialog-title {
-  font-weight: bold;
-  font-size: 18px;
-}
 </style>

@@ -6,14 +6,14 @@
       <p class="subtitle-1">Administrera vägföreningens inställningar</p>
     </div>
     
-    <v-card class="mb-golden elevation-2">
-      <v-card-title class="d-flex align-center">
+    <v-card class="rv-card rv-mb-md">
+      <v-card-title class="rv-card-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-domain</v-icon>
         <span class="text-h5">Grunduppgifter</span>
         <v-spacer></v-spacer>
         <v-btn
           v-if="!editing"
-          class="action-btn edit-btn"
+          class="rv-btn-icon rv-btn--primary"
           @click="startEditing"
         >
           <v-icon class="action-icon">mdi-pencil</v-icon>
@@ -21,7 +21,7 @@
       </v-card-title>
       <v-divider></v-divider>
       
-      <v-card-text class="pa-golden">
+      <v-card-text class="rv-p-md">
         <div v-if="loading" class="text-center py-4">
           <v-progress-circular indeterminate color="var(--color-primary-light)" size="64"></v-progress-circular>
         </div>
@@ -127,7 +127,7 @@
               color="var(--color-primary-light)"
               :disabled="!valid"
               @click="saveAssociation"
-              class="primary-action-btn"
+              class="rv-btn rv-btn--primary"
             >
               <v-icon left>mdi-content-save</v-icon>
               Spara
@@ -138,33 +138,33 @@
         <div v-else>
           <v-row>
             <v-col cols="12" md="6">
-              <div class="detail-label">Föreningens namn</div>
-              <div class="detail-value">{{ association.name || 'Ej angivet' }}</div>
+              <div class="rv-detail-label">Föreningens namn</div>
+              <div class="rv-detail-value">{{ association.name || 'Ej angivet' }}</div>
             </v-col>
             <v-col cols="12" md="6">
-              <div class="detail-label">Organisationsnummer</div>
-              <div class="detail-value">{{ association.organizationNumber || 'Ej angivet' }}</div>
+              <div class="rv-detail-label">Organisationsnummer</div>
+              <div class="rv-detail-value">{{ association.organizationNumber || 'Ej angivet' }}</div>
             </v-col>
           </v-row>
           
           <v-row>
             <v-col cols="12" md="4">
-              <div class="detail-label">E-post</div>
-              <div class="detail-value">
+              <div class="rv-detail-label">E-post</div>
+              <div class="rv-detail-value">
                 <a v-if="association.email" :href="`mailto:${association.email}`">{{ association.email }}</a>
                 <span v-else>Ej angivet</span>
               </div>
             </v-col>
             <v-col cols="12" md="4">
-              <div class="detail-label">Telefon</div>
-              <div class="detail-value">
+              <div class="rv-detail-label">Telefon</div>
+              <div class="rv-detail-value">
                 <a v-if="association.phone" :href="`tel:${association.phone}`">{{ association.phone }}</a>
                 <span v-else>Ej angivet</span>
               </div>
             </v-col>
             <v-col cols="12" md="4">
-              <div class="detail-label">Hemsida</div>
-              <div class="detail-value">
+              <div class="rv-detail-label">Hemsida</div>
+              <div class="rv-detail-value">
                 <a v-if="association.website" :href="ensureUrlProtocol(association.website)" target="_blank">{{ association.website }}</a>
                 <span v-else>Ej angivet</span>
               </div>
@@ -173,8 +173,8 @@
           
           <v-row>
             <v-col cols="12">
-              <div class="detail-label">Adress</div>
-              <div class="detail-value">
+              <div class="rv-detail-label">Adress</div>
+              <div class="rv-detail-value">
                 <template v-if="hasAddress">
                   {{ association.address || '' }}
                   <template v-if="association.postalCode || association.city">
@@ -189,14 +189,14 @@
       </v-card-text>
     </v-card>
     
-    <v-card class="mb-golden elevation-2">
-      <v-card-title class="d-flex align-center">
+    <v-card class="rv-card rv-mb-md">
+      <v-card-title class="rv-card-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-cash-register</v-icon>
         <span class="text-h5">Faktureringsinformation</span>
         <v-spacer></v-spacer>
         <v-btn
           v-if="!editingBilling"
-          class="action-btn edit-btn"
+          class="rv-btn-icon rv-btn--primary"
           @click="startEditingBilling"
         >
           <v-icon class="action-icon">mdi-pencil</v-icon>
@@ -204,7 +204,7 @@
       </v-card-title>
       <v-divider></v-divider>
       
-      <v-card-text class="pa-golden">
+      <v-card-text class="rv-p-md">
         <div v-if="loading" class="text-center py-4">
           <v-progress-circular indeterminate color="var(--color-primary-light)" size="64"></v-progress-circular>
         </div>
@@ -283,7 +283,7 @@
               color="var(--color-primary-light)"
               :disabled="!validBilling"
               @click="saveBillingInfo"
-              class="primary-action-btn"
+              class="rv-btn rv-btn--primary"
             >
               <v-icon left>mdi-content-save</v-icon>
               Spara
@@ -294,30 +294,30 @@
         <div v-else>
           <v-row>
             <v-col cols="12" md="6">
-              <div class="detail-label">Bankgironummer</div>
-              <div class="detail-value">{{ association.bankgiroNumber || 'Ej angivet' }}</div>
+              <div class="rv-detail-label">Bankgironummer</div>
+              <div class="rv-detail-value">{{ association.bankgiroNumber || 'Ej angivet' }}</div>
             </v-col>
             <v-col cols="12" md="6">
-              <div class="detail-label">Plusgironummer</div>
-              <div class="detail-value">{{ association.plusgiroNumber || 'Ej angivet' }}</div>
+              <div class="rv-detail-label">Plusgironummer</div>
+              <div class="rv-detail-value">{{ association.plusgiroNumber || 'Ej angivet' }}</div>
             </v-col>
           </v-row>
           
           <v-row>
             <v-col cols="12" md="6">
-              <div class="detail-label">Antal dagar till påminnelse</div>
-              <div class="detail-value">{{ association.reminderDays || 'Ej angivet' }}</div>
+              <div class="rv-detail-label">Antal dagar till påminnelse</div>
+              <div class="rv-detail-value">{{ association.reminderDays || 'Ej angivet' }}</div>
             </v-col>
             <v-col cols="12" md="6">
-              <div class="detail-label">Påminnelseavgift</div>
-              <div class="detail-value">{{ formatCurrency(association.reminderFee) }}</div>
+              <div class="rv-detail-label">Påminnelseavgift</div>
+              <div class="rv-detail-value">{{ formatCurrency(association.reminderFee) }}</div>
             </v-col>
           </v-row>
           
           <v-row v-if="association.invoiceText">
             <v-col cols="12">
-              <div class="detail-label">Standardtext på fakturor</div>
-              <div class="detail-value invoice-text">
+              <div class="rv-detail-label">Standardtext på fakturor</div>
+              <div class="rv-detail-value invoice-text">
                 {{ association.invoiceText }}
               </div>
             </v-col>
@@ -529,123 +529,6 @@ export default {
 <style scoped>
 .page-header {
   margin-bottom: var(--spacing-md);
-}
-
-/* Åtgärdsknappar i header */
-.action-btn {
-  width: 42px;
-  height: 42px;
-  min-width: 0;
-  border-radius: 21px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-  background-color: var(--color-primary-light) !important;
-  color: white !important;
-}
-
-.action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.action-btn:hover::before {
-  opacity: 1;
-}
-
-.action-btn .action-icon {
-  font-size: 18px;
-  transition: transform 0.3s ease;
-}
-
-.action-btn:hover .action-icon {
-  transform: scale(1.15);
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Primära åtgärdsknappar */
-.primary-action-btn {
-  height: 42px;
-  border-radius: var(--button-border-radius) !important;
-  padding: 0 24px !important;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease !important;
-}
-
-.primary-action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.primary-action-btn:hover::before {
-  opacity: 1;
-}
-
-.primary-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.primary-action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Detaljstilar */
-.detail-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.6);
-  margin-bottom: var(--spacing-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-value {
-  font-size: 1.1rem;
-  font-weight: 400;
-  margin-bottom: var(--spacing-md);
-}
-
-.detail-value a {
-  color: var(--color-secondary-dark);
-  text-decoration: none;
-}
-
-.detail-value a:hover {
-  text-decoration: underline;
 }
 
 .invoice-text {

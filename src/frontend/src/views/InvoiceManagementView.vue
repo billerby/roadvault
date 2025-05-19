@@ -6,8 +6,8 @@
     </div>
 
     <!-- Fakturalista -->
-    <v-card class="mb-golden elevation-2">
-      <v-card-title class="d-flex align-center">
+    <v-card class="rv-card rv-mb-md">
+      <v-card-title class="rv-card-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-file-document-multiple</v-icon>
         <span class="text-h5">Fakturaöversikt</span>
         <v-spacer></v-spacer>
@@ -33,7 +33,7 @@
         </v-btn-toggle>
         
         <v-btn
-          class="action-btn refresh-btn"
+          class="rv-btn-icon refresh-btn"
           @click="refreshInvoices"
           :loading="loading"
           title="Uppdatera"
@@ -43,13 +43,13 @@
       </v-card-title>
       <v-divider></v-divider>
       
-      <v-card-text class="pa-golden">
+      <v-card-text class="rv-p-md">
         <v-data-table
           :headers="invoiceHeaders"
           :items="filteredInvoices"
           :loading="loading"
           :items-per-page="10"
-          class="elevation-0 custom-table"
+           class="rv-table"
           :footer-props="{
             'items-per-page-options': [10, 25, 50, -1],
             'items-per-page-text': 'Rader per sida:'
@@ -125,11 +125,11 @@
           
           <!-- Åtgärder -->
           <template v-slot:item.actions="{ item }">
-            <div class="actions-container">
+            <div class="rv-actions-container">
               <v-tooltip bottom>
                 <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="action-btn-rounded mr-1"
+                    class="rv-btn-icon-rounded mr-1"
                     color="primary"
                     icon
                     small
@@ -145,7 +145,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="action-btn-rounded mr-1"
+                    class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                     color="accent"
                     icon
                     small
@@ -162,7 +162,7 @@
               <v-tooltip bottom>
                 <template v-slot:activator="{ props }">
                   <v-btn 
-                    class="action-btn-rounded"
+                    class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
                     color="secondary"
                     icon
                     small
@@ -180,12 +180,12 @@
           
           <!-- Inga fakturor -->
           <template v-slot:no-data>
-            <div class="empty-state text-center pa-golden">
+            <div class="rv-empty-state text-center rv-p-md">
               <v-icon size="64" color="grey lighten-1">mdi-file-document-off</v-icon>
               <p class="mt-4">Inga fakturor hittades.</p>
               <v-btn 
                 color="var(--color-primary-light)"
-                class="mt-4 primary-action-btn"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--primary"
                 @click="refreshInvoices"
               >
                 <v-icon left>mdi-refresh</v-icon>
@@ -198,14 +198,14 @@
     </v-card>
 
     <!-- Fakturasummering -->
-    <v-card class="mb-golden elevation-1">
-      <v-card-title class="d-flex align-center">
+    <v-card class="rv-mb-md elevation-1">
+      <v-card-title class="rv-card-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-chart-pie</v-icon>
         <span class="text-h6">Fakturasummering</span>
       </v-card-title>
       <v-divider></v-divider>
       
-      <v-card-text class="pa-golden">
+      <v-card-text class="rv-p-md">
         <v-row>
           <v-col cols="12" sm="6" md="3">
             <v-card class="stats-card elevation-1" outlined>
@@ -315,7 +315,7 @@
                 color="var(--color-accent-light)" 
                 @click="markOverdueInvoices"
                 :loading="loadingOverdue"
-                class="action-btn-secondary"
+                class="rv-btn-icon-secondary"
               >
                 <v-icon left>mdi-update</v-icon>
                 Markera förfallna
@@ -329,7 +329,7 @@
                 color="var(--color-secondary-light)" 
                 @click="sendReminders"
                 :loading="loadingReminders"
-                class="action-btn-secondary"
+                class="rv-btn-icon-secondary"
                 :disabled="statistics.overdueInvoices === 0"
               >
                 <v-icon left>mdi-email-alert</v-icon>
@@ -356,14 +356,14 @@
 
     <!-- Dialog för betalningshistorik -->
     <v-dialog v-model="paymentHistoryDialog" max-width="700px">
-      <v-card class="dialog-card">
-        <v-card-title class="text-h5 dialog-title">
+      <v-card class="rv-dialog">
+        <v-card-title class="rv-dialog-header">
           <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-history</v-icon>
           Betalningshistorik
         </v-card-title>
         <v-divider></v-divider>
         
-        <v-card-text class="pa-golden">
+        <v-card-text class="rv-p-md">
           <div v-if="selectedInvoice" class="mb-4">
             <div class="d-flex justify-space-between mb-2">
               <span class="subtitle-2">Faktura:</span>
@@ -391,7 +391,7 @@
             :headers="paymentHeaders"
             :items="invoicePayments"
             :loading="loadingPayments"
-            class="elevation-0 custom-table"
+             class="rv-table"
             dense
           >
             <template v-slot:item.paymentDate="{ item }">
@@ -413,11 +413,11 @@
             </template>
             
             <template v-slot:item.actions="{ item }">
-              <div class="actions-container">
+              <div class="rv-actions-container">
                 <v-tooltip bottom>
                   <template v-slot:activator="{ props }">
                     <v-btn 
-                      class="table-action-btn edit-action mr-1"
+                      class="rv-btn-icon rv-btn-icon--sm edit-action mr-1"
                       @click="editPayment(item)"
                       v-bind="props" 
                     >
@@ -430,7 +430,7 @@
                 <v-tooltip bottom>
                   <template v-slot:activator="{ props }">
                     <v-btn 
-                      class="table-action-btn delete-action"
+                      class="rv-btn-icon rv-btn-icon--sm delete-action"
                       @click="confirmDeletePayment(item)"
                       v-bind="props" 
                     >
@@ -484,7 +484,7 @@
       <v-card>
         <v-card-title class="text-h5">Ta bort betalning?</v-card-title>
         <v-divider></v-divider>
-        <v-card-text class="pa-golden">
+        <v-card-text class="rv-p-md">
           <p>Är du säker på att du vill ta bort denna betalning?</p>
           <p class="mt-2">Detta kommer att:</p>
           <ul>
@@ -1098,229 +1098,6 @@ export default {
   font-weight: 500 !important;
 }
 
-/* Table action buttons */
-.table-action-btn {
-  width: 32px;
-  height: 32px;
-  min-width: 0;
-  border-radius: 16px !important;
-  margin: 0 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.table-action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.table-action-btn:hover::before {
-  opacity: 1;
-}
-
-.table-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
-}
-
-.table-action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-}
-
-.table-action-btn .v-icon {
-  font-size: 16px;
-  transition: transform 0.2s ease;
-}
-
-.table-action-btn:hover .v-icon {
-  transform: scale(1.15);
-}
-
-.view-action {
-  background-color: var(--color-primary-light) !important;
-  color: white !important;
-}
-
-.payment-action {
-  background-color: var(--color-accent-light) !important;
-  color: white !important;
-}
-
-.payment-history-action {
-  background-color: var(--color-secondary-light) !important;
-  color: white !important;
-}
-
-.edit-action {
-  background-color: var(--color-secondary-light) !important;
-  color: white !important;
-}
-
-.delete-action {
-  background-color: #F44336 !important;
-  color: white !important;
-}
-
-/* Action buttons in header */
-.action-btn {
-  width: 40px;
-  height: 40px;
-  min-width: 0;
-  border-radius: 20px !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-}
-
-.refresh-btn {
-  background-color: var(--color-secondary-light) !important;
-  color: white !important;
-}
-
-.action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.action-btn:hover::before {
-  opacity: 1;
-}
-
-.action-btn .action-icon {
-  font-size: 18px;
-  transition: transform 0.3s ease;
-}
-
-.action-btn:hover .action-icon {
-  transform: scale(1.15);
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.action-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Primary action buttons */
-.primary-action-btn {
-  height: 42px;
-  border-radius: var(--button-border-radius) !important;
-  padding: 0 24px !important;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1) !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease !important;
-  
-  color: white !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
-  line-height: 42px !important;
-}
-
-.primary-action-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.primary-action-btn:hover::before {
-  opacity: 1;
-}
-
-.primary-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-.primary-action-btn:active {
-  transform: translateY(0);
-}
-
-/* Secondary action buttons */
-.action-btn-secondary {
-  height: 36px;
-  border-radius: var(--button-border-radius) !important;
-  padding: 0 16px !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  font-weight: 500 !important;
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  color: white !important;
-  font-size: 14px !important;
-  transition: all 0.3s ease !important;
-}
-
-.action-btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
-}
-
-.action-btn-rounded {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.2s ease;
-  border-radius: 50%;
-  width: 32px !important;
-  height: 32px !important;
-  margin: 0 2px;
-}
-
-.action-btn-rounded:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
-  transform: translateY(-2px);
-}
-
-.action-btn-rounded:active {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(0);
-}
-
-.action-btn-rounded .v-icon {
-  font-size: 16px;
-}
-
-.actions-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
 
 /* Statistics cards */
 .stats-card {

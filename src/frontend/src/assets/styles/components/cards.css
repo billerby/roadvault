@@ -1,0 +1,245 @@
+/* 
+ * RoadVault Card Styles
+ * Styles for cards and containers
+ */
+
+/* Base Card */
+.rv-card {
+  background-color: var(--color-background-paper);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-medium);
+  overflow: hidden;
+  margin-bottom: var(--spacing-md);
+}
+
+.rv-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Card Header */
+.rv-card-header {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.rv-card-header__title {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.rv-card-header__title .v-icon {
+  margin-right: var(--spacing-sm);
+  color: var(--color-primary-dark);
+}
+
+.rv-card-header__actions {
+  margin-left: auto;
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+/* Card Body */
+.rv-card-body {
+  padding: var(--spacing-md);
+}
+
+/* Card Footer */
+.rv-card-footer {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-top: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* Card Variants */
+.rv-card--primary {
+  border-top: 4px solid var(--color-primary);
+}
+
+.rv-card--secondary {
+  border-top: 4px solid var(--color-secondary);
+}
+
+.rv-card--accent {
+  border-top: 4px solid var(--color-accent);
+}
+
+.rv-card--error {
+  border-top: 4px solid var(--color-error);
+}
+
+.rv-card--warning {
+  border-top: 4px solid var(--color-warning);
+}
+
+.rv-card--info {
+  border-top: 4px solid var(--color-info);
+}
+
+/* Card with full header color */
+.rv-card--primary-header .rv-card-header {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.rv-card--secondary-header .rv-card-header {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.rv-card--accent-header .rv-card-header {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+/* Feature Cards */
+.rv-feature-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-medium);
+}
+
+.rv-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.rv-feature-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+}
+
+.rv-feature-card__content {
+  padding: var(--spacing-md);
+  flex-grow: 1;
+}
+
+.rv-feature-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Stat Card */
+.rv-stat-card {
+  position: relative;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-background-paper);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-medium);
+  overflow: hidden;
+  height: 100%;
+}
+
+.rv-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.rv-stat-card__icon {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  color: var(--color-primary);
+  opacity: 0.9;
+}
+
+.rv-stat-card__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.rv-stat-card__value {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.rv-stat-card__trend {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.rv-stat-card__trend--up {
+  color: var(--color-success);
+}
+
+.rv-stat-card__trend--down {
+  color: var(--color-error);
+}
+
+/* Property Details Card */
+.rv-property-card {
+  margin-bottom: var(--spacing-md);
+}
+
+.rv-property-header {
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-light));
+  color: white;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+}
+
+.rv-property-header h1 {
+  margin: 0;
+  font-weight: var(--font-weight-light);
+}
+
+/* Empty State for Cards */
+.rv-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl) var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.rv-empty-state__icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.rv-empty-state__message {
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-md);
+}
+
+/* Vuetify specific overrides */
+.v-card.rv-card {
+  border-radius: var(--border-radius-lg) !important;
+}
+
+.v-card-title.rv-card-header__title {
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs) !important;
+}
+
+.v-card-text.rv-card-body {
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md) !important;
+}

@@ -5,7 +5,7 @@ import router from './router';
 import vuetify from './plugins/vuetify'; // Anta att du har en Vuetify-konfigurationsfil
 
 // Import custom styles
-import './assets/styles/custom.css';
+import './assets/styles/main.css';
 
 createApp(App)
   .use(router)

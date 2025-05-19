@@ -1,0 +1,21 @@
+/* 
+ * RoadVault Main Stylesheet
+ * This file imports all CSS modules
+ */
+
+/* Import Variables & Base Styles */
+@import './variables.css';
+@import './base.css';
+@import './custom.css';
+
+/* Import Component Styles */
+@import './components/buttons.css';
+@import './components/cards.css';
+@import './components/tables.css';
+@import './components/dialogs.css';
+
+/* Import Utility Classes */
+@import './utilities.css';
+
+/* Legacy imports for backward compatibility */
+@import '../../styles/invoice-management.css';

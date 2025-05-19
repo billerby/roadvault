@@ -1,0 +1,337 @@
+/* 
+ * RoadVault Button Styles
+ * All button related styles
+ */
+
+/* Base Button */
+.rv-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-medium);
+  overflow: hidden;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.rv-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.rv-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.rv-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Ripple Effect */
+.rv-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.rv-btn:hover::before {
+  opacity: 1;
+}
+
+/* Button Variants */
+.rv-btn--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.rv-btn--secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.rv-btn--accent {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.rv-btn--success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.rv-btn--error {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.rv-btn--warning {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.rv-btn--info {
+  background-color: var(--color-info);
+  color: white;
+}
+
+/* Outlined Buttons */
+.rv-btn--outline {
+  background-color: transparent;
+  border: 1px solid currentColor;
+}
+
+.rv-btn--primary-outline {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.rv-btn--primary-outline:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.rv-btn--secondary-outline {
+  color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.rv-btn--secondary-outline:hover {
+  background-color: rgba(66, 165, 245, 0.1);
+}
+
+.rv-btn--accent-outline {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.rv-btn--accent-outline:hover {
+  background-color: rgba(255, 183, 77, 0.1);
+}
+
+.rv-btn--error-outline {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.rv-btn--error-outline:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Text Buttons */
+.rv-btn--text {
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.rv-btn--text:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+}
+
+.rv-btn--primary-text {
+  color: var(--color-primary);
+}
+
+.rv-btn--secondary-text {
+  color: var(--color-secondary);
+}
+
+.rv-btn--accent-text {
+  color: var(--color-accent);
+}
+
+.rv-btn--error-text {
+  color: var(--color-error);
+}
+
+/* Button Sizes */
+.rv-btn--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: var(--font-size-sm);
+}
+
+.rv-btn--lg {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--font-size-lg);
+}
+
+/* Icon Button */
+.rv-btn-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  border-radius: var(--border-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rv-btn-icon--sm {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.rv-btn-icon--lg {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.rv-btn-icon .v-icon {
+  font-size: 18px;
+  transition: transform var(--transition-fast);
+}
+
+.rv-btn-icon:hover .v-icon {
+  transform: scale(1.15);
+}
+
+.rv-btn-icon--sm .v-icon {
+  font-size: 16px;
+}
+
+.rv-btn-icon--lg .v-icon {
+  font-size: 22px;
+}
+
+/* Button with icon */
+.rv-btn .v-icon {
+  margin-right: 0.5rem;
+}
+
+.rv-btn .v-icon--right {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+/* Vuetify specific overrides */
+.v-btn.rv-btn {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Back button (header navigation) */
+.rv-back-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.rv-back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Action Containers */
+.rv-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.rv-actions--end {
+  justify-content: flex-end;
+}
+
+.rv-actions--center {
+  justify-content: center;
+}
+
+.rv-actions--space-between {
+  justify-content: space-between;
+}
+
+/* Table Actions */
+.rv-table-actions,
+.rv-actions-container {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+/* Table Action Buttons - More compact for tables */
+.rv-table-actions .rv-btn-icon,
+.rv-actions-container .rv-btn-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+/* Specific button for tables */
+.rv-btn-icon-rounded {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  border-radius: var(--border-radius-pill) !important;
+  padding: 0 !important;
+  margin: 0 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.rv-btn-icon-rounded:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.rv-btn-icon-rounded .v-icon {
+  font-size: 14px !important;
+}
+
+/* Icon sizes for small buttons */
+.rv-btn-icon--sm .v-icon,
+.rv-btn-icon-rounded .v-icon {
+  font-size: 14px !important;
+}
+
+/* Button colors for table actions */
+.rv-btn-icon--view {
+  background-color: var(--color-primary) !important;
+  color: white !important;
+}
+
+.rv-btn-icon--edit {
+  background-color: var(--color-secondary) !important;
+  color: white !important;
+}
+
+.rv-btn-icon--payment {
+  background-color: var(--color-accent) !important;
+  color: white !important;
+}
+
+.rv-btn-icon--delete {
+  background-color: var(--color-error) !important;
+  color: white !important;
+}

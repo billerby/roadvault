@@ -5,7 +5,7 @@
       :headers="headers"
       :items="properties"
       :loading="loading"
-      class="elevation-1"
+      class="rv-table"
       items-per-page="50"
     >
       <template v-slot:top>
@@ -80,7 +80,7 @@
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="deleteDialog" max-width="400px">
       <v-card>
-        <v-card-title class="text-h5">Konfirmera borttagning</v-card-title>
+            <v-card-title class="rv-dialog-header">Konfirmera borttagning</v-card-title>
         <v-card-text>
           Är du säker på att du vill ta bort {{ propertyToDelete ? propertyToDelete.propertyDesignation : '' }}?
         </v-card-text>

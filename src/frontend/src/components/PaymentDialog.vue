@@ -1,13 +1,13 @@
 <template>
   <v-dialog v-model="dialogVisible" max-width="600px">
-    <v-card class="dialog-card">
-      <v-card-title class="text-h5 dialog-title">
+    <v-card class="rv-dialog">
+          <v-card-title class="rv-dialog-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-cash-plus</v-icon>
         Registrera betalning
       </v-card-title>
       <v-divider></v-divider>
       
-      <v-card-text class="pa-golden">
+      <v-card-text class="rv-p-md">
         <v-form ref="paymentForm" v-model="validPaymentForm" lazy-validation>
           <div v-if="invoice" class="mb-4">
             <div class="d-flex justify-space-between mb-2">
@@ -395,13 +395,6 @@ function formatCurrency(value) {
 </script>
 
 <style scoped>
-.pa-golden {
-  padding: 16px;
-}
-
-.dialog-title {
-  background-color: #f5f5f5;
-}
 
 /* Custom styling for the date input to reinforce ISO format */
 :deep(.v-field__input) {

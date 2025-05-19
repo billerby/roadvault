@@ -25,7 +25,7 @@
       <!-- Invoice Details Section -->
       <v-col cols="12" md="6">
         <v-card class="mb-4 elevation-2" min-height="100%">
-          <v-card-title class="d-flex align-center">
+          <v-card-title class="rv-card-header">
             <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-file-document</v-icon>
             <span class="text-h5">Fakturainformation</span>
             <v-chip
@@ -39,7 +39,7 @@
           </v-card-title>
           <v-divider></v-divider>
           
-          <v-card-text class="pa-golden">
+          <v-card-text class="rv-p-md">
             <!-- Invoice Header Information -->
             <div class="invoice-header mb-4">
               <div class="d-flex flex-column">
@@ -188,7 +188,7 @@
       <!-- Payments and Actions Section -->
       <v-col cols="12" md="6">
         <v-card class="mb-4 elevation-2" min-height="100%">
-          <v-card-title class="d-flex align-center">
+          <v-card-title class="rv-card-header">
             <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-history</v-icon>
             <span class="text-h5">Betalningshistorik</span>
             <v-spacer></v-spacer>
@@ -204,13 +204,13 @@
           </v-card-title>
           <v-divider></v-divider>
 
-          <v-card-text class="pa-golden">
+          <v-card-text class="rv-p-md">
             <v-data-table
               :headers="paymentHeaders"
               :items="payments"
               :loading="loadingPayments"
               no-data-text="Inga betalningar har registrerats"
-              class="elevation-0 custom-table"
+               class="rv-table"
               dense
             >
               <template v-slot:item.paymentDate="{ item }">
@@ -232,11 +232,11 @@
               </template>
               
               <template v-slot:item.actions="{ item }">
-                <div class="actions-container">
+                <div class="rv-actions-container">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ props }">
                       <v-btn 
-                        class="table-action-btn edit-action mr-1"
+                        class="rv-btn-icon rv-btn-icon--sm edit-action mr-1"
                         icon
                         density="comfortable"
                         size="small"
@@ -253,7 +253,7 @@
                   <v-tooltip bottom>
                     <template v-slot:activator="{ props }">
                       <v-btn 
-                        class="table-action-btn"
+                        class="rv-btn-icon rv-btn-icon--sm"
                         icon
                         density="comfortable"
                         size="small"
@@ -328,7 +328,7 @@
       <!-- PDF Viewer Section -->
       <v-col cols="12">
         <v-card class="elevation-2">
-          <v-card-title class="d-flex align-center">
+          <v-card-title class="rv-card-header">
             <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-file-pdf-box</v-icon>
             <span class="text-h5">Faktura PDF</span>
             <v-spacer></v-spacer>
@@ -343,7 +343,7 @@
           </v-card-title>
           <v-divider></v-divider>
           
-          <v-card-text class="pa-golden">
+          <v-card-text class="rv-p-md">
             <div v-if="!pdfUrl" class="pdf-placeholder">
               <div class="d-flex flex-column align-center justify-center py-8">
                 <v-icon size="64" color="grey lighten-1" class="mb-4">mdi-file-pdf-box</v-icon>
@@ -378,7 +378,7 @@
     </v-row>
 
     <!-- Empty State -->
-    <v-card v-if="!loading && !invoice" class="empty-state pa-golden">
+    <v-card v-if="!loading && !invoice" class="rv-empty-state rv-p-md">
       <div class="text-center py-8">
         <v-icon size="64" color="grey lighten-1" class="mb-4">mdi-file-document-off</v-icon>
         <h3 class="text-h5 mb-2">Fakturan kunde inte hittas</h3>
@@ -412,7 +412,7 @@
       <v-card>
         <v-card-title class="text-h5">Ta bort betalning?</v-card-title>
         <v-divider></v-divider>
-        <v-card-text class="pa-golden">
+        <v-card-text class="rv-p-md">
           <p>Är du säker på att du vill ta bort denna betalning?</p>
           <p class="mt-2">Detta kommer att:</p>
           <ul>
@@ -448,7 +448,7 @@
       <v-card>
         <v-card-title class="text-h5">Makulera faktura?</v-card-title>
         <v-divider></v-divider>
-        <v-card-text class="pa-golden">
+        <v-card-text class="rv-p-md">
           <p>Är du säker på att du vill makulera denna faktura?</p>
           <p class="mt-2">Detta kommer att:</p>
           <ul>
@@ -1103,13 +1103,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.pa-golden {
-  padding: 16px;
-}
 
-.mb-golden {
-  margin-bottom: 24px;
-}
 
 .invoice-header {
   padding-bottom: 8px;
@@ -1154,25 +1148,7 @@ export default defineComponent({
   text-decoration: line-through;
 }
 
-.actions-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
 
-.table-action-btn {
-  transition: all 0.2s ease;
-}
-
-.table-action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.empty-state {
-  border-radius: 8px;
-  background-color: #f5f5f5;
-}
 
 .pdf-placeholder {
   border: 2px dashed #e0e0e0;
@@ -1192,10 +1168,6 @@ export default defineComponent({
   justify-content: center;
 }
 
-/* Dialog title styles */
-.dialog-title {
-  background-color: #f5f5f5;
-}
 
 /* Custom table styles */
 .custom-table {
