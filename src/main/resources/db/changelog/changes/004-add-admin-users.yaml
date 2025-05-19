@@ -1,0 +1,137 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: erib
+      comment: Add admin users
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: erik
+              - column:
+                  name: email
+                  value: billerby@gmail.com
+              - column:
+                  name: password
+                  # This is a BCrypt encoded password for 'erik'
+                  value: $2a$10$mqg.9jlhsd9XDdBozgtnCOe6IQO0kvvsmJJAG.UcS2Yus8NhuyMiO
+              - column:
+                  name: first_name
+                  value: Erik
+              - column:
+                  name: last_name
+                  value: Billerby
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: created_at
+                  valueDate: now()
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'erik')
+              - column:
+                  name: role
+                  value: ROLE_ADMIN
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'erik')
+              - column:
+                  name: role
+                  value: ROLE_USER
+                  
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: anders
+              - column:
+                  name: email
+                  value: anders.collin@gmail.com
+              - column:
+                  name: password
+                  # This is a BCrypt encoded password for 'anders'
+                  value: $2a$10$5UXbonaceaRtdpVrbRW9x.vdV1UzQkBP9.jKvh.w0XAdsbloDqC0G
+              - column:
+                  name: first_name
+                  value: Anders
+              - column:
+                  name: last_name
+                  value: Collin
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: created_at
+                  valueDate: now()
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'anders')
+              - column:
+                  name: role
+                  value: ROLE_ADMIN
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'anders')
+              - column:
+                  name: role
+                  value: ROLE_USER
+                  
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: lotta
+              - column:
+                  name: email
+                  value: charlotte.hemvik@outlook.com
+              - column:
+                  name: password
+                  # This is a BCrypt encoded password for 'lotta'
+                  value: $2a$10$Pbl.w5UatHCPdPhZ3wY/j.OxOsK5YPPb8ulhqii2dXfYV8PJkYmb.
+              - column:
+                  name: first_name
+                  value: Lotta
+              - column:
+                  name: last_name
+                  value: Hemvik
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: created_at
+                  valueDate: now()
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'lotta')
+              - column:
+                  name: role
+                  value: ROLE_ADMIN
+        - insert:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  valueComputed: (SELECT id FROM users WHERE username = 'lotta')
+              - column:
+                  name: role
+                  value: ROLE_USER

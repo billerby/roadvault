@@ -1,11 +1,18 @@
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/roadvault
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -15,11 +22,9 @@ services:
       # Use a 64-byte key (512 bits) for HS512
       - ROADVAULT_APP_JWTSECRET=fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82
       - ROADVAULT_APP_JWTEXPIRATIONMS=86400000
-      - LOGGING_LEVEL_COM_BILLERBY_ROADVAULT_SECURITY=TRACE
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_AUTHENTICATION=TRACE
-      - LOGGING_LEVEL_ROOT=DEBUG
-      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK=DEBUG
+      - LOGGING_LEVEL_COM_BILLERBY_ROADVAULT_SECURITY=INFO
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=INFO
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_AUTHENTICATION=INFO
 
   db:
     image: postgres:15-alpine

@@ -71,7 +71,7 @@ public class PropertyRepositoryIntegrationTest {
         assertEquals("Test Owner", foundPropertyWithOwner.get().getMainContact().getName());
         
         // Test finding by designation
-        List<Property> propertiesByDesignation = propertyRepository.findByPropertyDesignationContainingIgnoreCase("Apelgården");
+        List<Property> propertiesByDesignation = propertyRepository.findByPropertyDesignationContainingIgnoreCase("1:99");
         assertFalse(propertiesByDesignation.isEmpty());
         assertEquals(1, propertiesByDesignation.size());
         assertEquals("Mjörn Apelgården 1:99", propertiesByDesignation.get(0).getPropertyDesignation());
