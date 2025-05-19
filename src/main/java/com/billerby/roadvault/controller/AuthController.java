@@ -1,5 +1,7 @@
 package com.billerby.roadvault.controller;
 
+import com.billerby.roadvault.dto.ChangePasswordRequest;
+import com.billerby.roadvault.dto.ChangePasswordResponse;
 import com.billerby.roadvault.dto.LoginRequest;
 import com.billerby.roadvault.dto.LoginResponse;
 import com.billerby.roadvault.dto.RegisterRequest;
@@ -7,6 +9,7 @@ import com.billerby.roadvault.dto.UserDTO;
 import com.billerby.roadvault.model.User;
 import com.billerby.roadvault.security.JwtUtils;
 import com.billerby.roadvault.service.UserService;
+import com.billerby.roadvault.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -107,6 +110,42 @@ public class AuthController {
         User createdUser = userService.createUser(user);
         
         return new ResponseEntity<>(convertToDTO(createdUser), HttpStatus.CREATED);
+    }
+    
+    /**
+     * POST /v1/auth/change-password : Change the current user's password.
+     *
+     * @param changePasswordRequest the password change request
+     * @return the ResponseEntity with status 200 (OK) and with body containing status message
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<ChangePasswordResponse> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        // Get the current authenticated username
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+        
+        try {
+            userService.changePassword(
+                    currentUsername,
+                    changePasswordRequest.getCurrentPassword(),
+                    changePasswordRequest.getNewPassword(),
+                    changePasswordRequest.getConfirmPassword()
+            );
+            
+            return ResponseEntity.ok(new ChangePasswordResponse("Password changed successfully", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ChangePasswordResponse(e.getMessage(), false));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ChangePasswordResponse(e.getMessage(), false));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ChangePasswordResponse("An error occurred while changing password", false));
+        }
     }
     
     /**

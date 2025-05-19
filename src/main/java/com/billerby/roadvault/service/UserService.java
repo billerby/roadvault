@@ -138,6 +138,37 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
     }
+    
+    /**
+     * Change a user's password with validation of current password.
+     *
+     * @param username The username
+     * @param currentPassword The current password
+     * @param newPassword The new password
+     * @param confirmPassword The confirmed new password
+     * @return The updated user
+     * @throws ResourceNotFoundException if user is not found
+     * @throws IllegalArgumentException if current password is incorrect or new passwords don't match
+     */
+    @Transactional
+    public User changePassword(String username, String currentPassword, String newPassword, String confirmPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+        
+        // Check if current password is correct
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        
+        // Check if new password and confirm password match
+        if (!newPassword.equals(confirmPassword)) {
+            throw new IllegalArgumentException("New password and confirm password don't match");
+        }
+        
+        // Update password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return userRepository.save(user);
+    }
 
     /**
      * Enable or disable a user.

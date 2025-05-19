@@ -11,6 +11,7 @@ import BillingView from '../views/BillingView.vue';
 import AssociationView from '../views/AssociationView.vue';
 import InvoiceManagementView from '../views/InvoiceManagementView.vue';
 import InvoiceDetailsView from '../views/InvoiceDetailView.vue';
+import ProfileView from '../views/ProfileView.vue';
 
 const routes = [
   {
@@ -70,6 +71,12 @@ const routes = [
     path: '/invoices/:id',
     name: 'invoice-view',
     component: InvoiceDetailsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView,
     meta: { requiresAuth: true }
   }
 ];

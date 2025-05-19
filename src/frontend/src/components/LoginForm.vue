@@ -93,6 +93,7 @@ export default {
           password: this.password
         });
         
+        // Reactive isAuthenticated state is already updated by authService
         // Redirect to home page after successful login
         this.$router.push('/');
       } catch (err) {

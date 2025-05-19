@@ -34,6 +34,12 @@
             </v-btn>
           </template>
           <v-list>
+            <v-list-item to="/profile">
+              <template v-slot:prepend>
+                <v-icon color="primary">mdi-account-cog</v-icon>
+              </template>
+              <v-list-item-title>Mitt konto</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="logout">
               <template v-slot:prepend>
                 <v-icon color="error">mdi-logout</v-icon>
@@ -128,12 +134,13 @@
       <template v-slot:append>
         <div class="pa-4">
           <v-btn 
-            prepend-icon="mdi-cog"
+            to="/profile"
+            prepend-icon="mdi-account-cog"
             block 
             color="primary"
             variant="outlined"
           >
-            Inställningar
+            Mitt konto
           </v-btn>
         </div>
       </template>
@@ -157,13 +164,20 @@
 
 <script>
 import authService from './services/auth.service';
+import { watch } from 'vue';
+import AuthStatusCheck from './components/AuthStatusCheck.vue';
 
 export default {
   name: 'App',
   
+  components: {
+    AuthStatusCheck
+  },
+  
   data() {
     return {
       drawer: null,
+      isDevelopment: import.meta.env.DEV || import.meta.env.MODE === 'development',
     };
   },
   
@@ -184,6 +198,15 @@ export default {
       authService.logout();
       this.$router.push('/login');
     }
+  },
+  
+  // Watch for changes in authentication state
+  mounted() {
+    // Force update when auth state changes
+    watch(() => authService.isUserAuthenticated.value, (newValue) => {
+      // This will trigger any reactive updates
+      console.log('Authentication state changed:', newValue);
+    });
   }
 };
 </script>
