@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20250518-01-add-apelgarden-association
+      author: erik.billerby
+      comment: Add Apelgårdens vägsamfällighet to the Association table
+      changes:
+        - insert:
+            tableName: associations
+            columns:
+              - column:
+                  name: name
+                  value: "Apelgårdens vägsamfällighet"
+              - column:
+                  name: organization_number
+                  value: "717912-4289"
+              - column:
+                  name: plusgiro_number
+                  value: "76454-8"
+              - column:
+                  name: email
+                  value: "billerby@gmail.com"
+              - column:
+                  name: phone
+                  value: "46730825065"
+              - column:
+                  name: created_at
+                  valueDate: "CURRENT_TIMESTAMP"
+              - column:
+                  name: updated_at
+                  valueDate: "CURRENT_TIMESTAMP"
+      rollback:
+        - delete:
+            tableName: associations
+            where: "organization_number = '717912-4289'"
