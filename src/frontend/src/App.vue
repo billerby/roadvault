@@ -165,15 +165,9 @@
 <script>
 import authService from './services/auth.service';
 import { watch } from 'vue';
-import AuthStatusCheck from './components/AuthStatusCheck.vue';
 
 export default {
   name: 'App',
-  
-  components: {
-    AuthStatusCheck
-  },
-  
   data() {
     return {
       drawer: null,
