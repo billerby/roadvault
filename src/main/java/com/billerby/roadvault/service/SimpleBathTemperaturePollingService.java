@@ -8,10 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -36,20 +38,23 @@ public class SimpleBathTemperaturePollingService {
     public SimpleBathTemperaturePollingService(
             BathTemperatureRepository bathTemperatureRepository,
             BathTemperatureConfig bathTemperatureConfig,
+            @Qualifier("ttnRestTemplate") RestTemplate restTemplate,
             ObjectMapper objectMapper) {
         this.bathTemperatureRepository = bathTemperatureRepository;
         this.bathTemperatureConfig = bathTemperatureConfig;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
     
     /**
-     * Poll for new temperature data.
-     * This method can be called manually or via scheduler.
+     * Poll for new temperature data asynchronously.
+     * This method runs in a separate thread pool to prevent blocking the application.
+     * Includes proper error handling and timeouts to prevent hanging.
      */
+    @Async("scheduledTaskExecutor")
     @Scheduled(fixedRate = 15 * 60 * 1000) // 15 minutes in milliseconds
     public void pollTemperatureData() {
-        logger.info("Polling for new temperature data from The Things Network using simple implementation...");
+        logger.info("Polling for new temperature data from The Things Network using async implementation...");
         
         try {
             // Create headers with authorization
@@ -75,8 +80,62 @@ public class SimpleBathTemperaturePollingService {
             } else {
                 logger.warn("Failed to get temperature data. Status: {}", response.getStatusCode());
             }
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            // Network/timeout errors - these are expected occasionally
+            logger.warn("TTN API network error (will retry in 15 minutes): {}", e.getMessage());
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // HTTP client errors (4xx) - authentication, not found etc.
+            logger.error("TTN API client error: {} - {}", e.getStatusCode(), e.getMessage());
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            // HTTP server errors (5xx) - TTN service issues
+            logger.warn("TTN API server error (will retry in 15 minutes): {} - {}", e.getStatusCode(), e.getMessage());
         } catch (Exception e) {
-            logger.error("Error polling temperature data: {}", e.getMessage(), e);
+            // Any other unexpected errors
+            logger.error("Unexpected error polling temperature data: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Synchronous version of pollTemperatureData for testing purposes.
+     * This method does the same work as pollTemperatureData but without @Async annotation.
+     */
+    public void pollTemperatureDataSync() {
+        logger.info("Polling for new temperature data from The Things Network (sync for testing)...");
+        
+        try {
+            // Create headers with authorization
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bathTemperatureConfig.getToken());
+            
+            // Create HTTP entity with headers
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            
+            // Make API request
+            ResponseEntity<String> response = restTemplate.exchange(
+                    bathTemperatureConfig.getApiUrl(),
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+            
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                // Log the response body for debugging at debug level
+                logger.debug("API Response: {}", response.getBody());
+                processApiResponse(response.getBody());
+            } else {
+                logger.warn("Failed to get temperature data. Status: {}", response.getStatusCode());
+            }
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            // Network/timeout errors - these are expected occasionally
+            logger.warn("TTN API network error (will retry in 15 minutes): {}", e.getMessage());
+        } catch (org.springframework.web.client.HttpClientErrorException e) {
+            // HTTP client errors (4xx) - authentication, not found etc.
+            logger.error("TTN API client error: {} - {}", e.getStatusCode(), e.getMessage());
+        } catch (org.springframework.web.client.HttpServerErrorException e) {
+            // HTTP server errors (5xx) - TTN service issues
+            logger.warn("TTN API server error (will retry in 15 minutes): {} - {}", e.getStatusCode(), e.getMessage());
+        } catch (Exception e) {
+            // Any other unexpected errors
+            logger.error("Unexpected error polling temperature data: {}", e.getMessage(), e);
         }
     }
     

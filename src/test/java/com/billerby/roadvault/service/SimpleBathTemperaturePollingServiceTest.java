@@ -26,7 +26,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * Integration test for SimpleBathTemperaturePollingService.
+ * Unit test for SimpleBathTemperaturePollingService.
+ * Tests the core polling logic without async behavior.
  */
 public class SimpleBathTemperaturePollingServiceTest {
 
@@ -49,20 +50,12 @@ public class SimpleBathTemperaturePollingServiceTest {
         // Use a spy on the real ObjectMapper
         ObjectMapper spyObjectMapper = spy(objectMapper);
         
-        // Initialize service with mocks
+        // Initialize service with mocks - now including RestTemplate in constructor
         pollingService = new SimpleBathTemperaturePollingService(
                 bathTemperatureRepository,
                 bathTemperatureConfig,
+                restTemplate,  // Now passed as constructor parameter
                 spyObjectMapper);
-        
-        // Set the RestTemplate field in the service using reflection
-        try {
-            java.lang.reflect.Field restTemplateField = SimpleBathTemperaturePollingService.class.getDeclaredField("restTemplate");
-            restTemplateField.setAccessible(true);
-            restTemplateField.set(pollingService, restTemplate);
-        } catch (Exception e) {
-            fail("Failed to set RestTemplate field: " + e.getMessage());
-        }
     }
     
     @Test
@@ -91,8 +84,8 @@ public class SimpleBathTemperaturePollingServiceTest {
         when(bathTemperatureRepository.save(any(BathTemperature.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         
-        // Act
-        pollingService.pollTemperatureData();
+        // Act - Use the synchronous version for testing
+        pollingService.pollTemperatureDataSync();
         
         // Assert
         // Verify REST call was made
