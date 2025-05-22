@@ -1,18 +1,11 @@
 package com.billerby.roadvault.service.mapper;
 
-import com.billerby.roadvault.dto.AssociationDTO;
-import com.billerby.roadvault.dto.BillingDTO;
-import com.billerby.roadvault.dto.InvoiceDTO;
-import com.billerby.roadvault.dto.OwnerDTO;
-import com.billerby.roadvault.dto.PaymentDTO;
-import com.billerby.roadvault.dto.PropertyDTO;
-import com.billerby.roadvault.model.Association;
-import com.billerby.roadvault.model.Billing;
-import com.billerby.roadvault.model.Invoice;
-import com.billerby.roadvault.model.Owner;
-import com.billerby.roadvault.model.Payment;
-import com.billerby.roadvault.model.Property;
+import com.billerby.roadvault.dto.*;
+import com.billerby.roadvault.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +16,10 @@ import java.util.stream.Collectors;
  * Service for mapping between DTOs and entities.
  */
 @Service
+@Transactional(readOnly = true)
 public class DTOMapperService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DTOMapperService.class);
     
     /**
      * Convert an Invoice entity to an InvoiceDTO.
@@ -50,6 +46,7 @@ public class DTOMapperService {
             
             if (invoice.getProperty().getMainContact() != null) {
                 dto.setOwnerName(invoice.getProperty().getMainContact().getName());
+                dto.setOwnerEmail(invoice.getProperty().getMainContact().getEmail());
             }
         }
         
@@ -223,21 +220,31 @@ public class DTOMapperService {
             return null;
         }
         
-        BillingDTO dto = new BillingDTO();
-        dto.setId(billing.getId());
-        dto.setYear(billing.getYear());
-        dto.setDescription(billing.getDescription());
-        dto.setTotalAmount(billing.getTotalAmount());
-        dto.setExtraCharge(billing.getExtraCharge());
-        dto.setIssueDate(billing.getIssueDate());
-        dto.setDueDate(billing.getDueDate());
-        dto.setType(billing.getType() != null ? billing.getType().name() : null);
-        
-        if (billing.getInvoices() != null) {
-            dto.setInvoiceCount(billing.getInvoices().size());
+        try {
+            BillingDTO dto = new BillingDTO();
+            dto.setId(billing.getId());
+            dto.setYear(billing.getYear());
+            dto.setDescription(billing.getDescription());
+            dto.setTotalAmount(billing.getTotalAmount());
+            dto.setIssueDate(billing.getIssueDate());
+            dto.setDueDate(billing.getDueDate());
+            dto.setType(billing.getType() != null ? billing.getType().name() : null);
+            
+            // Try-catch for accessing invoices to handle LazyInitializationException
+            try {
+                if (billing.getInvoices() != null) {
+                    dto.setInvoiceCount(billing.getInvoices().size());
+                }
+            } catch (Exception e) {
+                logger.warn("Could not access invoices for billing {}: {}", billing.getId(), e.getMessage());
+                dto.setInvoiceCount(0); // Set default value
+            }
+            
+            return dto;
+        } catch (Exception e) {
+            logger.error("Error converting Billing to DTO: {}", e.getMessage(), e);
+            throw e;
         }
-        
-        return dto;
     }
     
     /**
@@ -272,7 +279,6 @@ public class DTOMapperService {
         billing.setYear(dto.getYear());
         billing.setDescription(dto.getDescription());
         billing.setTotalAmount(dto.getTotalAmount());
-        billing.setExtraCharge(dto.getExtraCharge());
         billing.setIssueDate(dto.getIssueDate());
         billing.setDueDate(dto.getDueDate());
         

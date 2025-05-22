@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005
+      author: erib
+      changes:
+        - addColumn:
+            tableName: invoices
+            columns:
+              - column:
+                  name: pdf
+                  type: blob
+                  remarks: "PDF representation of the invoice"
+      comment: "Add PDF field to invoices table for storing generated invoice PDFs"

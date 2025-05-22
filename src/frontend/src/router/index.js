@@ -8,6 +8,7 @@ import LoginView from '../views/LoginView.vue';
 import PropertiesView from '../views/PropertiesView.vue';
 import PropertyView from '../views/PropertyView.vue';
 import BillingView from '../views/BillingView.vue';
+import BillingDetailsView from '../views/BillingDetailsView.vue';
 import AssociationView from '../views/AssociationView.vue';
 import InvoiceManagementView from '../views/InvoiceManagementView.vue';
 import InvoiceDetailsView from '../views/InvoiceDetailView.vue';
@@ -46,13 +47,13 @@ const routes = [
   {
     path: '/billings/:id',
     name: 'billing-view',
-    component: BillingView,
+    component: BillingDetailsView,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
     path: '/billings/:id/invoices',
     name: 'billing-invoices',
-    component: BillingView,
+    component: InvoiceManagementView,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {

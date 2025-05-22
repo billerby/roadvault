@@ -71,4 +71,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    // Ensure assets are properly handled for Spring Boot static serving
+    assetsDir: 'assets',
+    // Generate manifest for better cache control
+    manifest: false,
+    rollupOptions: {
+      output: {
+        // Ensure consistent asset naming
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
+      }
+    }
+  }
 })

@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-remove-extra-charge
+      author: roadvault
+      changes:
+        - dropColumn:
+            tableName: billings
+            columnName: extra_charge

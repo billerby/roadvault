@@ -13,6 +13,9 @@ target/
 .springBeans
 .sts4-cache
 
+.env.prod
+.env
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -31,3 +34,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend build artifacts ###
+src/frontend/dist/
+src/frontend/node_modules/.cache/
+src/main/resources/static/assets/
+src/main/resources/static/index.html

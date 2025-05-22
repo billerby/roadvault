@@ -13,6 +13,8 @@ services:
       resources:
         limits:
           memory: 1G
+    env_file:
+      - .env
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/roadvault
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -20,7 +22,6 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_LIQUIBASE_ENABLED=true
       # Use a 64-byte key (512 bits) for HS512
-      - ROADVAULT_APP_JWTSECRET=fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82a7fd3e10f4b94752a3e7da5ee63f4f82
       - ROADVAULT_APP_JWTEXPIRATIONMS=86400000
       - LOGGING_LEVEL_COM_BILLERBY_ROADVAULT_SECURITY=INFO
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=INFO

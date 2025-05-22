@@ -14,6 +14,7 @@ public class InvoiceDTO {
     private Long propertyId;
     private String propertyDesignation;
     private String ownerName;
+    private String ownerEmail;
     private BigDecimal amount;
     private LocalDate dueDate;
     private String invoiceNumber;
@@ -26,7 +27,7 @@ public class InvoiceDTO {
     
     // Constructor with fields
     public InvoiceDTO(Long id, Long billingId, String billingDescription, Long propertyId, 
-                      String propertyDesignation, String ownerName, BigDecimal amount, 
+                      String propertyDesignation, String ownerName, String ownerEmail, BigDecimal amount, 
                       LocalDate dueDate, String invoiceNumber, String ocrNumber, String status) {
         this.id = id;
         this.billingId = billingId;
@@ -34,6 +35,7 @@ public class InvoiceDTO {
         this.propertyId = propertyId;
         this.propertyDesignation = propertyDesignation;
         this.ownerName = ownerName;
+        this.ownerEmail = ownerEmail;
         this.amount = amount;
         this.dueDate = dueDate;
         this.invoiceNumber = invoiceNumber;
@@ -89,6 +91,14 @@ public class InvoiceDTO {
     
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
+    }
+    
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+    
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
     }
     
     public BigDecimal getAmount() {

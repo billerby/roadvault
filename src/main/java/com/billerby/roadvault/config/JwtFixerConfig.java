@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.security.Key;
-import java.util.Base64;
 
 @Configuration
 public class JwtFixerConfig {

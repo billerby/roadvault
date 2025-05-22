@@ -16,4 +16,7 @@ public interface BillingRepository extends JpaRepository<Billing, Long> {
     
     @Query("SELECT b FROM Billing b LEFT JOIN FETCH b.invoices WHERE b.id = :id")
     Billing findByIdWithInvoices(Long id);
+    
+    @Query("SELECT DISTINCT b FROM Billing b LEFT JOIN FETCH b.invoices")
+    List<Billing> findAllWithInvoices();
 }

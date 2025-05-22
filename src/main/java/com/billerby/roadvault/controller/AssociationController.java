@@ -1,7 +1,6 @@
 package com.billerby.roadvault.controller;
 
 import com.billerby.roadvault.dto.AssociationDTO;
-import com.billerby.roadvault.model.Association;
 import com.billerby.roadvault.service.AssociationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * REST controller for managing association information.
  */
 @RestController
-@RequestMapping("/v1/association")
+@RequestMapping("/api/v1/association")
 public class AssociationController {
     
     private final AssociationService associationService;

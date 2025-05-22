@@ -11,3 +11,11 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/003-add-apelgarden-data.yaml
   - include:
       file: classpath:db/changelog/changes/004-add-admin-users.yaml
+  - include:
+      file: classpath:db/changelog/changes/005-add-pdf-to-invoices.yaml
+  - include:
+      file: classpath:db/changelog/changes/006-add-bath-temperature-table.yaml
+  - include:
+      file: classpath:db/changelog/changes/007-update-bath-temperature-coordinates.yaml
+  - include:
+      file: classpath:db/changelog/changes/008-remove-extra-charge.yaml

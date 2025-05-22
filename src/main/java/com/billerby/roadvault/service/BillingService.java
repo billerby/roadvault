@@ -5,7 +5,10 @@ import com.billerby.roadvault.exception.ResourceNotFoundException;
 import com.billerby.roadvault.model.Billing;
 import com.billerby.roadvault.repository.BillingRepository;
 import com.billerby.roadvault.service.mapper.DTOMapperService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
  */
 @Service
 public class BillingService {
+    private static final Logger logger = LoggerFactory.getLogger(BillingService.class);
 
     private final BillingRepository billingRepository;
     private final InvoiceService invoiceService;
@@ -25,7 +29,7 @@ public class BillingService {
     @Autowired
     public BillingService(
             BillingRepository billingRepository, 
-            InvoiceService invoiceService,
+            @Lazy InvoiceService invoiceService,
             DTOMapperService dtoMapperService) {
         this.billingRepository = billingRepository;
         this.invoiceService = invoiceService;
@@ -33,13 +37,50 @@ public class BillingService {
     }
 
     /**
+     * Get all billings with eagerly loaded invoices.
+     *
+     * @return List of all billings with their invoices
+     */
+    @Transactional(readOnly = true)
+    public List<Billing> getAllBillingsWithInvoices() {
+        try {
+            return billingRepository.findAllWithInvoices();
+        } catch (Exception e) {
+            logger.error("Error retrieving billings with invoices: {}", e.getMessage(), e);
+            // Fallback to standard findAll if the eager fetch fails
+            return getAllBillings();
+        }
+    }
+
+    /**
      * Get all billings as DTOs.
      *
      * @return List of all billing DTOs
      */
+    @Transactional(readOnly = true)
     public List<BillingDTO> getAllBillingDTOs() {
-        List<Billing> billings = getAllBillings();
-        return dtoMapperService.toBillingDTOList(billings);
+        try {
+            // Fetch all billings with a direct query to ensure all fields are loaded
+            List<Billing> billings = billingRepository.findAll();
+            
+            List<BillingDTO> dtos = billings.stream()
+                .map(billing -> {
+                    try {
+                        return dtoMapperService.toBillingDTO(billing);
+                    } catch (Exception e) {
+                        logger.error("Error converting billing {} to DTO: {}", billing.getId(), e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
+            
+            logger.debug("Retrieved {} billings as DTOs", dtos.size());
+            return dtos;
+        } catch (Exception e) {
+            logger.error("Error retrieving all billing DTOs: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -47,6 +88,7 @@ public class BillingService {
      *
      * @return List of all billings
      */
+    @Transactional(readOnly = true)
     public List<Billing> getAllBillings() {
         return billingRepository.findAll();
     }
@@ -58,6 +100,7 @@ public class BillingService {
      * @return The billing
      * @throws ResourceNotFoundException if billing is not found
      */
+    @Transactional(readOnly = true)
     public Billing getBillingById(Long id) {
         return billingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Billing not found with id: " + id));
@@ -70,6 +113,7 @@ public class BillingService {
      * @return The billing DTO
      * @throws ResourceNotFoundException if billing is not found
      */
+    @Transactional(readOnly = true)
     public BillingDTO getBillingDTOById(Long id) {
         Billing billing = getBillingById(id);
         return dtoMapperService.toBillingDTO(billing);
@@ -82,8 +126,13 @@ public class BillingService {
      * @return The billing with invoices
      * @throws ResourceNotFoundException if billing is not found
      */
+    @Transactional(readOnly = true)
     public Billing getBillingWithInvoicesById(Long id) {
-        return billingRepository.findByIdWithInvoices(id);
+        Billing billing = billingRepository.findByIdWithInvoices(id);
+        if (billing == null) {
+            throw new ResourceNotFoundException("Billing not found with id: " + id);
+        }
+        return billing;
     }
     
     /**
@@ -93,6 +142,7 @@ public class BillingService {
      * @return The billing DTO with invoices
      * @throws ResourceNotFoundException if billing is not found
      */
+    @Transactional(readOnly = true)
     public BillingDTO getBillingWithInvoicesDTOById(Long id) {
         Billing billing = getBillingWithInvoicesById(id);
         return dtoMapperService.toBillingDTO(billing);
@@ -214,7 +264,6 @@ public class BillingService {
         billing.setYear(billingDetails.getYear());
         billing.setDescription(billingDetails.getDescription());
         billing.setTotalAmount(billingDetails.getTotalAmount());
-        billing.setExtraCharge(billingDetails.getExtraCharge());
         billing.setIssueDate(billingDetails.getIssueDate());
         billing.setDueDate(billingDetails.getDueDate());
         billing.setType(billingDetails.getType());
@@ -245,14 +294,15 @@ public class BillingService {
      */
     @Transactional
     public void deleteBilling(Long id) {
-        Billing billing = billingRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Billing not found with id: " + id));
-        
-        // Check if billing has invoices
-        if (billing.getInvoices() != null && !billing.getInvoices().isEmpty()) {
-            throw new IllegalStateException("Cannot delete billing with invoices. Delete invoices first.");
+        Billing billing = billingRepository.findByIdWithInvoices(id);
+        if (billing == null) {
+            throw new ResourceNotFoundException("Billing not found with id: " + id);
         }
         
+        // The entity relationship already has cascade = CascadeType.ALL and orphanRemoval = true,
+        // so we can delete the billing and all related invoices will be automatically deleted.
         billingRepository.delete(billing);
+        
+        logger.info("Deleted billing ID {} and all associated invoices", id);
     }
 }

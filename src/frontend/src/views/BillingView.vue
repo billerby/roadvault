@@ -93,8 +93,8 @@
           <v-tooltip bottom v-else>
             <template v-slot:activator="{ props }">
               <v-btn 
-                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
-                color="accent"
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--primary"
+                color="primary"
                 icon
                 small
                 v-bind="props" 
@@ -120,6 +120,22 @@
               </v-btn>
             </template>
             <span>Redigera</span>
+          </v-tooltip>
+          
+          <v-tooltip bottom>
+            <template v-slot:activator="{ props }">
+              <v-btn 
+                class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
+                color="error"
+                icon
+                small
+                v-bind="props" 
+                @click="confirmDeleteBilling(item)"
+              >
+                <v-icon small>mdi-delete</v-icon>
+              </v-btn>
+            </template>
+            <span>Ta bort</span>
           </v-tooltip>
         </div>
       </template>
@@ -224,17 +240,6 @@
               :rules="[v => !!v || 'Belopp är obligatoriskt']"
               prefix="SEK"
               hint="Totalt belopp att utdebitera"
-              outlined
-              dense
-            ></v-text-field>
-          </v-col>
-          <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="editedBilling.extraCharge"
-              label="Extra debitering"
-              type="number"
-              prefix="SEK"
-              hint="Eventuell extra debitering (t.ex. förseningsavgift)"
               outlined
               dense
             ></v-text-field>
@@ -401,6 +406,44 @@
   </v-card>
 </v-dialog>
 
+<!-- Bekräftelse för att ta bort utdebitering -->
+<v-dialog v-model="deleteDialog" max-width="500px">
+  <v-card>
+    <v-card-title class="text-h5">Ta bort utdebitering?</v-card-title>
+    <v-divider></v-divider>
+    <v-card-text class="rv-p-md">
+      <p>Är du säker på att du vill ta bort denna utdebitering?</p>
+      <p v-if="selectedBilling && selectedBilling.invoiceCount > 0" class="mt-2 font-weight-bold error--text">
+        OBS! Detta kommer att radera alla fakturor som är kopplade till denna utdebitering.
+      </p>
+      <p v-else class="mt-2">
+        Denna utdebitering har inga fakturor kopplade till sig.
+      </p>
+      <p class="font-weight-medium mt-4">Denna åtgärd kan inte ångras!</p>
+    </v-card-text>
+    <v-divider></v-divider>
+    
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        color="grey lighten-1"
+        text
+        @click="deleteDialog = false"
+      >
+        Avbryt
+      </v-btn>
+      <v-btn 
+        color="error"
+        @click="deleteBilling"
+        :loading="deletingBilling"
+      >
+        <v-icon left>mdi-delete</v-icon>
+        Ta bort
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
 <!-- Snackbar för feedback -->
 <v-snackbar
   v-model="snackbar"
@@ -438,7 +481,9 @@ export default {
       loading: false,
       billingDialog: false,
       confirmDialog: false,
+      deleteDialog: false,
       selectedBilling: null,
+      deletingBilling: false,
       
       // Form
       valid: true,
@@ -447,7 +492,6 @@ export default {
         year: new Date().getFullYear(),
         description: '',
         totalAmount: null,
-        extraCharge: 0,
         issueDate: format(new Date(), 'yyyy-MM-dd'),
         dueDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         type: 'ANNUAL_FEE',
@@ -458,7 +502,6 @@ export default {
         year: new Date().getFullYear(),
         description: '',
         totalAmount: null,
-        extraCharge: 0,
         issueDate: format(new Date(), 'yyyy-MM-dd'),
         dueDate: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         type: 'ANNUAL_FEE',
@@ -639,6 +682,38 @@ export default {
       } finally {
         this.loading = false;
         this.confirmDialog = false;
+      }
+    },
+    
+    confirmDeleteBilling(billing) {
+      this.selectedBilling = billing;
+      this.deleteDialog = true;
+    },
+    
+    async deleteBilling() {
+      if (!this.selectedBilling) return;
+      
+      this.deletingBilling = true;
+      
+      try {
+        await billingService.deleteBilling(this.selectedBilling.id);
+        this.showSnackbar('Utdebiteringen har tagits bort', 'success');
+        
+        // Uppdatera listan
+        await this.fetchBillings();
+      } catch (error) {
+        console.error('Fel vid borttagning av utdebitering:', error);
+        
+        // Handle different error cases
+        if (error.response && error.response.data) {
+          const errorMsg = error.response.data.message || 'Kunde inte ta bort utdebiteringen';
+          this.showSnackbar(errorMsg, 'error');
+        } else {
+          this.showSnackbar('Kunde inte ta bort utdebiteringen', 'error');
+        }
+      } finally {
+        this.deletingBilling = false;
+        this.deleteDialog = false;
       }
     },
     

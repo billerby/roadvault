@@ -24,10 +24,9 @@ class BillingService {
   }
   
   createBilling(billing, generateInvoices = false) {
-    if (generateInvoices === undefined) {
-      generateInvoices = false;
-    }
-    return api.post(`/v1/billings?generateInvoices=${generateInvoices}`, billing);
+    // Ensure generateInvoices is a proper boolean string value (true or false)
+    const generateInvoicesParam = generateInvoices === true ? 'true' : 'false';
+    return api.post(`/v1/billings?generateInvoices=${generateInvoicesParam}`, billing);
   }
   
   updateBilling(id, billing) {

@@ -1,6 +1,7 @@
 package com.billerby.roadvault.model;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,6 +48,10 @@ public class Invoice {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Lob
+    @Column(name = "pdf")
+    private byte[] pdf;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Payment> payments = new HashSet<>();
@@ -210,6 +215,14 @@ public class Invoice {
 
     public void setPayments(Set<Payment> payments) {
         this.payments = payments;
+    }
+    
+    public byte[] getPdf() {
+        return pdf;
+    }
+
+    public void setPdf(byte[] pdf) {
+        this.pdf = pdf;
     }
 
     @Override

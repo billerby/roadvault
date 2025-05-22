@@ -1,16 +1,32 @@
 <template>
   <v-container>
     <div class="page-header">
-      <h1 class="text-h3">Fakturor</h1>
-      <p class="subtitle-1">Hantera fakturor och betalningar för vägsamfälligheten</p>
+      <h1 class="text-h3">{{ pageTitle }}</h1>
+      <p class="subtitle-1">
+        {{ pageSubtitle }}
+      </p>
     </div>
 
     <!-- Fakturalista -->
     <v-card class="rv-card rv-mb-md">
       <v-card-title class="rv-card-header">
         <v-icon color="var(--color-primary-dark)" class="mr-2">mdi-file-document-multiple</v-icon>
-        <span class="text-h5">Fakturaöversikt</span>
+        <span class="text-h5">{{ billingInfo ? `Fakturor för ${billingInfo.description}` : 'Fakturaöversikt' }}</span>
         <v-spacer></v-spacer>
+        
+        <!-- Tillbaka-knapp om från billing -->
+        <v-btn
+          v-if="billingInfo"
+          class="rv-btn-icon-text mr-2"
+          color="var(--color-primary-dark)"
+          outlined
+          small
+          @click="$router.push('/billings')"
+          title="Tillbaka till utdebiteringar"
+        >
+          <v-icon small class="mr-1">mdi-arrow-left</v-icon>
+          Utdebiteringar
+        </v-btn>
         
         <!-- Filterknappar -->
         <v-btn-toggle
@@ -174,6 +190,22 @@
                   </v-btn>
                 </template>
                 <span>Betalningshistorik</span>
+              </v-tooltip>
+              
+              <v-tooltip bottom>
+                <template v-slot:activator="{ props }">
+                  <v-btn 
+                    class="rv-btn-icon rv-btn-icon--sm rv-btn--secondary"
+                    color="error"
+                    icon
+                    small
+                    v-bind="props" 
+                    @click="confirmCancelInvoice(item)"
+                  >
+                    <v-icon small>mdi-cancel</v-icon>
+                  </v-btn>
+                </template>
+                <span>Makulera faktura</span>
               </v-tooltip>
             </div>
           </template>
@@ -515,6 +547,45 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dialog för att bekräfta makulering av faktura -->
+    <v-dialog v-model="cancelInvoiceDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Makulera faktura?</v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="rv-p-md">
+          <p>Är du säker på att du vill makulera denna faktura?</p>
+          <p class="mt-2">Detta kommer att:</p>
+          <ul>
+            <li>Markera fakturan som makulerad</li>
+            <li>Göra fakturan ogiltig för betalning</li>
+          </ul>
+          <p v-if="selectedInvoice && hasPayments(selectedInvoice)" class="mt-2 font-weight-bold warning--text">
+            OBS! Denna faktura har redan registrerade betalningar.
+          </p>
+          <p class="font-weight-medium mt-4">Denna åtgärd kan inte ångras!</p>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn 
+            color="grey lighten-1" 
+            text 
+            @click="cancelInvoiceDialog = false"
+          >
+            Avbryt
+          </v-btn>
+          <v-btn 
+            color="error"
+            @click="cancelInvoice"
+            :loading="cancellingInvoice"
+          >
+            <v-icon left>mdi-cancel</v-icon>
+            Makulera
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar för feedback -->
     <v-snackbar
       v-model="snackbar"
@@ -554,6 +625,10 @@ export default {
       loading: false,
       statusFilter: 'ALL',
       
+      // Billing info (if viewing from a specific billing)
+      billingId: null,
+      billingInfo: null,
+      
       // Selected invoice
       selectedInvoice: null,
       
@@ -572,6 +647,10 @@ export default {
       deletePaymentDialog: false,
       selectedPayment: null,
       deletingPayment: false,
+      
+      // Cancel invoice dialog
+      cancelInvoiceDialog: false,
+      cancellingInvoice: false,
       
       // Invoice headers
       invoiceHeaders: [
@@ -644,6 +723,20 @@ export default {
       return this.invoices;
     },
     
+    pageTitle() {
+      return this.billingInfo 
+        ? `Fakturor för ${this.billingInfo.description}` 
+        : 'Fakturor';
+    },
+    
+    pageSubtitle() {
+      if (this.billingInfo) {
+        return `Visar fakturor för utdebitering ${this.billingInfo.year} (${this.formatCurrency(this.billingInfo.totalAmount)})`;
+      } else {
+        return 'Hantera fakturor och betalningar för vägsamfälligheten';
+      }
+    },
+    
     formattedPaymentDate() {
       if (!this.payment.paymentDate) return '';
       
@@ -664,8 +757,32 @@ export default {
     }
   },
   
+  watch: {
+    '$route'(to, from) {
+      // When the route changes, check if we have a billing ID
+      const billingId = to.params.id;
+      if (billingId) {
+        this.billingId = billingId;
+        this.fetchBillingInfo(billingId);
+        this.fetchInvoicesForBilling(billingId);
+      } else {
+        this.billingId = null;
+        this.billingInfo = null;
+        this.fetchInvoices();
+      }
+    }
+  },
+  
   created() {
-    this.fetchInvoices();
+    // Check if we have a billing ID in the route params
+    const billingId = this.$route.params.id;
+    if (billingId) {
+      this.billingId = billingId;
+      this.fetchBillingInfo(billingId);
+      this.fetchInvoicesForBilling(billingId);
+    } else {
+      this.fetchInvoices();
+    }
   },
   
   methods: {
@@ -676,6 +793,41 @@ export default {
         paymentType: 'BANKGIRO',
         comment: ''
       };
+    },
+    
+    async fetchBillingInfo(billingId) {
+      try {
+        // Import the billing service
+        const billingService = await import('../services/billing.service').then(m => m.default);
+        const response = await billingService.getBillingById(billingId);
+        this.billingInfo = response.data;
+      } catch (error) {
+        console.error('Error fetching billing information:', error);
+        this.showSnackbar('Kunde inte hämta information om utdebiteringen', 'error');
+      }
+    },
+    
+    async fetchInvoicesForBilling(billingId) {
+      this.loading = true;
+      
+      try {
+        // Import the billing service
+        const billingService = await import('../services/billing.service').then(m => m.default);
+        const response = await billingService.getInvoicesForBilling(billingId);
+        console.log('Invoices for billing response:', response);
+        
+        // Make sure we're setting an array to this.invoices
+        this.invoices = Array.isArray(response.data) ? response.data : [];
+        
+        // Update statistics
+        this.calculateStatistics();
+      } catch (error) {
+        console.error('Error fetching invoices for billing:', error);
+        this.showSnackbar('Kunde inte hämta fakturor för utdebitering', 'error');
+        this.invoices = [];
+      } finally {
+        this.loading = false;
+      }
     },
     
     async fetchInvoices() {
@@ -758,7 +910,11 @@ export default {
     },
     
     refreshInvoices() {
-      this.fetchInvoices();
+      if (this.billingId) {
+        this.fetchInvoicesForBilling(this.billingId);
+      } else {
+        this.fetchInvoices();
+      }
     },
     
     viewInvoice(invoice) {
@@ -1033,6 +1189,34 @@ export default {
         console.error('Error sending reminders:', error);
         this.showSnackbar('Kunde inte skicka påminnelser', 'error');
         this.loadingReminders = false;
+      }
+    },
+    
+    confirmCancelInvoice(invoice) {
+      this.selectedInvoice = invoice;
+      this.cancelInvoiceDialog = true;
+    },
+    
+    async cancelInvoice() {
+      if (!this.selectedInvoice) return;
+      
+      this.cancellingInvoice = true;
+      
+      try {
+        // Import the invoice service if needed
+        const invoiceService = await import('../services/invoice.service').then(m => m.default);
+        await invoiceService.updateInvoiceStatus(this.selectedInvoice.id, 'CANCELLED');
+        
+        this.showSnackbar('Fakturan har makulerats', 'success');
+        
+        // Refresh invoices
+        this.refreshInvoices();
+      } catch (error) {
+        console.error('Fel vid makulering av faktura:', error);
+        this.showSnackbar('Kunde inte makulera fakturan', 'error');
+      } finally {
+        this.cancellingInvoice = false;
+        this.cancelInvoiceDialog = false;
       }
     },
     
