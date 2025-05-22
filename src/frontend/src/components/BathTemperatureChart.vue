@@ -26,7 +26,7 @@
         >
           <v-chip value="day" variant="outlined">
             <v-icon class="mr-1">mdi-clock-outline</v-icon>
-            Senaste dagen
+            Senaste dygnet
           </v-chip>
           <v-chip value="week" variant="outlined">
             <v-icon class="mr-1">mdi-calendar-week</v-icon>
