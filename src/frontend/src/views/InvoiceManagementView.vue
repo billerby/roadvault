@@ -217,7 +217,7 @@
               <p class="mt-4">Inga fakturor hittades.</p>
               <v-btn 
                 color="var(--color-primary-light)"
-                class="rv-btn-icon rv-btn-icon--sm rv-btn--primary"
+                class="rv-btn rv-btn--primary"
                 @click="refreshInvoices"
               >
                 <v-icon left>mdi-refresh</v-icon>

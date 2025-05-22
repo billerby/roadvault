@@ -232,17 +232,17 @@
               </template>
               
               <template v-slot:item.actions="{ item }">
-                <div class="rv-actions-container">
+                <div class="d-flex justify-center">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ props }">
                       <v-btn 
-                        class="rv-btn-icon rv-btn-icon--sm edit-action mr-1"
                         icon
-                        density="comfortable"
                         size="small"
-                        color="secondary"
+                        color="primary"
+                        variant="tonal"
                         @click="editPayment(item)"
-                        v-bind="props" 
+                        v-bind="props"
+                        class="mr-1"
                       >
                         <v-icon size="small">mdi-pencil</v-icon>
                       </v-btn>
@@ -253,13 +253,12 @@
                   <v-tooltip bottom>
                     <template v-slot:activator="{ props }">
                       <v-btn 
-                        class="rv-btn-icon rv-btn-icon--sm"
                         icon
-                        density="comfortable"
                         size="small"
                         color="error"
+                        variant="tonal"
                         @click="confirmDeletePayment(item)"
-                        v-bind="props" 
+                        v-bind="props"
                       >
                         <v-icon size="small">mdi-delete</v-icon>
                       </v-btn>
@@ -451,14 +450,14 @@
 
     <payment-dialog
         v-if="invoice"
-        v-model="paymentDialog"
+        v-model:visible="paymentDialog"
         :invoice="invoice"
-        :remaining-amount="getRemainingAmount()"
-        :saving="savingPayment"
-        :default-payment="getDefaultPayment()"
+        :editing-payment="editingPayment"
+        :paid-amount="calculatePaidAmount()"
         @payment-created="onPaymentChanged"
         @payment-updated="onPaymentChanged"
         @close="closePaymentDialog"
+        @error="onPaymentError"
     />
    
     <!-- Dialog for Delete Payment Confirmation -->
@@ -612,6 +611,13 @@ export default defineComponent({
       // Payment dialog
       paymentDialog: false,
       savingPayment: false,
+      editingPayment: null,
+      payment: {
+        amount: null,
+        paymentDate: '',
+        paymentType: 'BANKGIRO',
+        comment: ''
+      },
 
       
       // Delete payment dialog
@@ -961,29 +967,36 @@ export default defineComponent({
     },
     
     openPaymentDialog() {
-      this.payment = this.getDefaultPayment();
-      
-      // Default to remaining amount
-      if (this.invoice.status === 'PARTIALLY_PAID') {
-        this.payment.amount = this.getRemainingAmount();
-      } else {
-        this.payment.amount = this.invoice.amount;
-      }
-      
+      this.editingPayment = null;
       this.paymentDialog = true;
     },
+    
     onPaymentChanged() {
         this.fetchInvoice();
         this.fetchInvoicePayments();
     },
     
+    onPaymentError(error) {
+      console.error('Payment error:', error);
+      this.showSnackbar('Kunde inte spara betalning', 'error');
+    },
+    
     closePaymentDialog() {
       this.paymentDialog = false;
+      this.editingPayment = null;
       this.payment = this.getDefaultPayment();
       
       if (this.$refs.paymentForm) {
         this.$refs.paymentForm.reset();
       }
+    },
+    
+    editPayment(payment) {
+      // Set the payment for editing
+      this.editingPayment = payment;
+      
+      // Open the payment dialog in edit mode
+      this.paymentDialog = true;
     },
     
     confirmDeletePayment(payment) {
