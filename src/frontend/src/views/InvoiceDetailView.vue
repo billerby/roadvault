@@ -1047,36 +1047,8 @@ export default defineComponent({
       this.downloading = true;
       
       try {
-        let blob;
-        
-        // Om vi redan har laddat PDF:en, använd den istället för att göra en ny API-förfrågan
-        if (this.pdfUrl) {
-          try {
-            // Hämta PDF:en från den befintliga URL:en
-            const response = await fetch(this.pdfUrl);
-            blob = await response.blob();
-          } catch (fetchError) {
-            console.error('Error fetching from cached PDF URL:', fetchError);
-            // Om det misslyckas, fallback till att hämta PDF:en från servern
-            const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
-            blob = new Blob([response.data], { type: 'application/pdf' });
-          }
-        } else {
-          // Om vi inte har laddat PDF:en än, hämta den från servern
-          const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
-          blob = new Blob([response.data], { type: 'application/pdf' });
-        }
-        
-        // Skapa en nedladdningslänk
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `faktura_${this.invoice.invoiceNumber || this.invoice.id}.pdf`;
-        link.click();
-        
-        // Städa upp URL:en efter nedladdning
-        window.URL.revokeObjectURL(url);
-        
+        const blob = await this.getPdfBlob();
+        this.downloadBlobAsPdf(blob);
         this.showSnackbar('Faktura PDF har laddats ner', 'success');
       } catch (error) {
         console.error('Error downloading invoice PDF:', error);
@@ -1084,6 +1056,33 @@ export default defineComponent({
       } finally {
         this.downloading = false;
       }
+    },
+
+    async getPdfBlob() {
+      // Försök först använda cached PDF URL om den finns
+      if (this.pdfUrl) {
+        try {
+          const response = await fetch(this.pdfUrl);
+          if (response.ok) {
+            return await response.blob();
+          }
+        } catch (error) {
+          console.warn('Failed to fetch from cached PDF URL, falling back to API:', error);
+        }
+      }
+      
+      // Fallback: hämta från servern
+      const response = await invoiceService.exportInvoicesToPdf([this.invoice.id]);
+      return new Blob([response.data], { type: 'application/pdf' });
+    },
+
+    downloadBlobAsPdf(blob) {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `faktura_${this.invoice.invoiceNumber || this.invoice.id}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
     },
     
     printPdf() {
