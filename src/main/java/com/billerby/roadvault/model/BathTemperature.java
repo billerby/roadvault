@@ -9,7 +9,11 @@ import java.time.Instant;
  * This stores data sent from Dragino LSN50v2-D20 temperature sensors via LoRaWAN.
  */
 @Entity
-@Table(name = "bath_temperature")
+@Table(name = "bath_temperature", indexes = {
+    @Index(name = "idx_bath_temperature_device_time", columnList = "device_id, received_at"),
+    @Index(name = "idx_bath_temperature_received_at", columnList = "received_at"),
+    @Index(name = "idx_bath_temperature_device_time_desc", columnList = "device_id, received_at DESC")
+})
 public class BathTemperature {
 
     @Id

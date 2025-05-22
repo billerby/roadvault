@@ -13,6 +13,7 @@ import AssociationView from '../views/AssociationView.vue';
 import InvoiceManagementView from '../views/InvoiceManagementView.vue';
 import InvoiceDetailsView from '../views/InvoiceDetailView.vue';
 import ProfileView from '../views/ProfileView.vue';
+import BathTemperatureView from '../views/BathTemperatureView.vue';
 
 const routes = [
   {
@@ -78,6 +79,12 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: ProfileView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bath-temperature',
+    name: 'bath-temperature',
+    component: BathTemperatureView,
     meta: { requiresAuth: true }
   }
 ];

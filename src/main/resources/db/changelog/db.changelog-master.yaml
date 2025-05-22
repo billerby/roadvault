@@ -19,3 +19,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/007-update-bath-temperature-coordinates.yaml
   - include:
       file: classpath:db/changelog/changes/008-remove-extra-charge.yaml
+  - include:
+      file: classpath:db/changelog/changes/009-add-bath-temperature-performance-indexes.yaml

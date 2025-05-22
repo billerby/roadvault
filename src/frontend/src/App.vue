@@ -88,6 +88,17 @@
         ></v-list-item>
         
         <v-list-item 
+          to="/bath-temperature"
+          :active="$route.path === '/bath-temperature'"
+          color="primary"
+          prepend-icon="mdi-waves"
+          title="Badtemperatur"
+          rounded="lg"
+          class="my-1"
+        ></v-list-item>
+  
+        
+        <v-list-item 
           v-if="hasRole('ADMIN')"
           to="/billings"
           :active="$route.path.startsWith('/billings')"

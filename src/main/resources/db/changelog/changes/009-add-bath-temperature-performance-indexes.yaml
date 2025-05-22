@@ -1,0 +1,78 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-bath-temperature-performance-indexes
+      author: erib
+      comment: "Add performance indexes for bath temperature queries as data volume grows"
+      changes:
+        # Drop existing basic indexes to replace with compound indexes
+        - dropIndex:
+            indexName: idx_bath_temp_device_id
+            tableName: bath_temperature
+        
+        - dropIndex:
+            indexName: idx_bath_temp_received_at
+            tableName: bath_temperature
+        
+        # Primary compound index for most common query pattern (device + time range)
+        - createIndex:
+            indexName: idx_bath_temperature_device_time
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: device_id
+              - column:
+                  name: received_at
+            unique: false
+        
+        # Index for time-range queries across all devices  
+        - createIndex:
+            indexName: idx_bath_temperature_received_at
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: received_at
+            unique: false
+        
+        # Index optimized for getting latest temperature per device
+        - sql:
+            sql: "CREATE INDEX idx_bath_temperature_device_time_desc ON bath_temperature (device_id, received_at DESC);"
+            comment: "Index for latest temperature queries with DESC ordering"
+        
+        # Unique constraint to prevent duplicate measurements from same device at same time
+        - addUniqueConstraint:
+            tableName: bath_temperature
+            columnNames: device_id, received_at
+            constraintName: uk_bath_temperature_device_time
+            
+      rollback:
+        # Rollback: restore original simple indexes
+        - dropUniqueConstraint:
+            tableName: bath_temperature
+            constraintName: uk_bath_temperature_device_time
+        
+        - dropIndex:
+            indexName: idx_bath_temperature_device_time_desc
+            tableName: bath_temperature
+        
+        - dropIndex:
+            indexName: idx_bath_temperature_device_time
+            tableName: bath_temperature
+        
+        - dropIndex:
+            indexName: idx_bath_temperature_received_at
+            tableName: bath_temperature
+        
+        # Recreate original indexes
+        - createIndex:
+            indexName: idx_bath_temp_device_id
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: device_id
+        
+        - createIndex:
+            indexName: idx_bath_temp_received_at
+            tableName: bath_temperature
+            columns:
+              - column:
+                  name: received_at

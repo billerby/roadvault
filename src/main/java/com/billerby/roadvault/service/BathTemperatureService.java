@@ -138,7 +138,7 @@ public class BathTemperatureService {
      * @return List of BathTemperatureDto
      */
     public List<BathTemperatureDto> getTemperaturesInTimeRange(Instant startTime, Instant endTime) {
-        List<BathTemperature> temperatures = bathTemperatureRepository.findByReceivedAtBetweenOrderByReceivedAtDesc(
+        List<BathTemperature> temperatures = bathTemperatureRepository.findByReceivedAtBetweenOrderByReceivedAtAsc(
                 startTime, endTime);
         return temperatures.stream()
                 .map(this::convertToDto)

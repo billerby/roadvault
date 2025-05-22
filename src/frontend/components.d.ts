@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    BathTemperatureChart: typeof import('./src/components/BathTemperatureChart.vue')['default']
     BathTemperatureWidget: typeof import('./src/components/BathTemperatureWidget.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     LoginForm: typeof import('./src/components/LoginForm.vue')['default']

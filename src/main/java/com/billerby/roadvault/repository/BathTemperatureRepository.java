@@ -31,6 +31,14 @@ public interface BathTemperatureRepository extends JpaRepository<BathTemperature
     List<BathTemperature> findByReceivedAtBetweenOrderByReceivedAtDesc(Instant startTime, Instant endTime);
 
     /**
+     * Find temperature records within a time range ordered chronologically (ASC)
+     * @param startTime Start of time range
+     * @param endTime End of time range
+     * @return List of temperature records ordered from oldest to newest
+     */
+    List<BathTemperature> findByReceivedAtBetweenOrderByReceivedAtAsc(Instant startTime, Instant endTime);
+
+    /**
      * Find temperature records for a specific device within a time range
      * @param deviceId The device ID to filter by
      * @param startTime Start of time range
@@ -65,12 +73,12 @@ public interface BathTemperatureRepository extends JpaRepository<BathTemperature
      * Get daily average temperatures for a specific device within a time range
      * This is a custom query that groups the data by day.
      */
-    @Query(value = "SELECT DATE(bt.received_at) as date, AVG(bt.temperature) as avg_temp " +
+    @Query(value = "SELECT DATE_TRUNC('day', bt.received_at) as date, AVG(bt.temperature) as avg_temp " +
             "FROM bath_temperature bt " +
             "WHERE bt.device_id = :deviceId " +
             "AND bt.received_at BETWEEN :startTime AND :endTime " +
-            "GROUP BY DATE(bt.received_at) " +
-            "ORDER BY date DESC", nativeQuery = true)
+            "GROUP BY DATE_TRUNC('day', bt.received_at) " +
+            "ORDER BY date ASC", nativeQuery = true)
     List<Object[]> getDailyAverageTemperatures(
             @Param("deviceId") String deviceId, 
             @Param("startTime") Instant startTime, 
@@ -80,12 +88,12 @@ public interface BathTemperatureRepository extends JpaRepository<BathTemperature
      * Get hourly average temperatures for a specific device within a time range
      * This is a custom query that groups the data by hour.
      */
-    @Query(value = "SELECT DATE_FORMAT(bt.received_at, '%Y-%m-%d %H:00:00') as hour, AVG(bt.temperature) as avg_temp " +
+    @Query(value = "SELECT DATE_TRUNC('hour', bt.received_at) as hour, AVG(bt.temperature) as avg_temp " +
             "FROM bath_temperature bt " +
             "WHERE bt.device_id = :deviceId " +
             "AND bt.received_at BETWEEN :startTime AND :endTime " +
-            "GROUP BY DATE_FORMAT(bt.received_at, '%Y-%m-%d %H:00:00') " +
-            "ORDER BY hour DESC", nativeQuery = true)
+            "GROUP BY DATE_TRUNC('hour', bt.received_at) " +
+            "ORDER BY hour ASC", nativeQuery = true)
     List<Object[]> getHourlyAverageTemperatures(
             @Param("deviceId") String deviceId, 
             @Param("startTime") Instant startTime, 
