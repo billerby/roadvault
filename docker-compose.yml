@@ -12,7 +12,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 768M
     env_file:
       - .env
     environment:
@@ -21,20 +21,27 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_LIQUIBASE_ENABLED=true
-      # Use a 64-byte key (512 bits) for HS512
       - ROADVAULT_APP_JWTEXPIRATIONMS=86400000
       - LOGGING_LEVEL_COM_BILLERBY_ROADVAULT_SECURITY=INFO
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=INFO
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY_AUTHENTICATION=INFO
+      # JVM Memory optimization
+      - JAVA_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError
 
   db:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_DB=roadvault
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      # Memory optimization for small instance
+      - POSTGRES_SHARED_BUFFERS=32MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=128MB
+      - POSTGRES_WORK_MEM=2MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=16MB
+      - POSTGRES_MAX_CONNECTIONS=20
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -43,6 +50,10 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
 volumes:
   postgres_data:

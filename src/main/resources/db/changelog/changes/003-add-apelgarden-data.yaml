@@ -18,10 +18,10 @@ databaseChangeLog:
                   value: "76454-8"
               - column:
                   name: email
-                  value: "billerby@gmail.com"
+                  value: "charlotte.hemvik@outlook.com"
               - column:
                   name: phone
-                  value: "46730825065"
+                  value: "46707773010"
               - column:
                   name: created_at
                   valueDate: "CURRENT_TIMESTAMP"

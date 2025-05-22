@@ -397,7 +397,7 @@
             color="var(--color-primary-light)"
             @click="confirmGenerateInvoices"
             :loading="loading"
-            class="rv-btn rv-btn--primary"
+            class="rv-btn"
           >
             <v-icon left>mdi-check</v-icon>
             Generera fakturor

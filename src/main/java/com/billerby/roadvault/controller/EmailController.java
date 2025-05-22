@@ -51,6 +51,70 @@ public class EmailController {
     }
     
     /**
+     * POST /v1/emails/invoices/{invoiceId}/reminder : Send reminder email for a single invoice.
+     *
+     * @param invoiceId the invoice ID
+     * @return the ResponseEntity with status 200 (OK) and success status
+     */
+    @PostMapping("/invoices/{invoiceId}/reminder")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> sendInvoiceReminder(@PathVariable Long invoiceId) {
+        try {
+            // För nu använder vi samma metod som för vanlig e-post
+            // I framtiden kan vi skapa en separat metod för påminnelser med annan text
+            int sentCount = emailService.sendInvoices(List.of(invoiceId));
+            
+            if (sentCount > 0) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Påminnelse har skickats via e-post"
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Kunde inte skicka påminnelse - kontrollera att e-postadress finns"
+                ));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "message", "Ett fel uppstod när påminnelsen skulle skickas: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
+     * POST /v1/emails/invoices/{invoiceId} : Send email for a single invoice.
+     *
+     * @param invoiceId the invoice ID
+     * @return the ResponseEntity with status 200 (OK) and success status
+     */
+    @PostMapping("/invoices/{invoiceId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> sendSingleInvoiceEmail(@PathVariable Long invoiceId) {
+        try {
+            int sentCount = emailService.sendInvoices(List.of(invoiceId));
+            
+            if (sentCount > 0) {
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Fakturan har skickats via e-post"
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Kunde inte skicka fakturan - kontrollera att e-postadress finns"
+                ));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "message", "Ett fel uppstod när fakturan skulle skickas: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
      * POST /v1/emails/invoices/billing/{billingId} : Send invoice emails for all invoices in a billing.
      *
      * @param billingId the billing ID

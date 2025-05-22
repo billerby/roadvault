@@ -576,6 +576,7 @@ import { defineComponent } from 'vue';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import invoiceService from '../services/invoice.service';
+import emailService from '../services/email.service';
 import pdfService from '../services/pdf.service';
 import PaymentDialog from '../components/PaymentDialog.vue';
 import VuePdfEmbed from 'vue-pdf-embed';
@@ -1116,37 +1117,63 @@ export default defineComponent({
     },
     
     async sendInvoice() {
+      if (!this.invoice || !this.invoice.id) return;
+      
       this.sendingEmail = true;
       
       try {
-        // This would typically call an API endpoint to send the invoice via email
-        // For now we'll just simulate this with a delay
-        setTimeout(() => {
-          this.showSnackbar('Faktura har skickats', 'success');
-          this.sendingEmail = false;
-        }, 1500);
+        const response = await emailService.sendInvoiceEmail(this.invoice.id);
+        
+        if (response.data.success) {
+          this.showSnackbar(response.data.message || 'Faktura har skickats via e-post', 'success');
+          // Uppdatera fakturan för att visa att den har skickats
+          this.fetchInvoice();
+        } else {
+          this.showSnackbar(response.data.message || 'Kunde inte skicka faktura', 'warning');
+        }
       } catch (error) {
         console.error('Error sending invoice:', error);
-        this.showSnackbar('Kunde inte skicka faktura', 'error');
+        
+        // Hantera olika typer av fel
+        if (error.response && error.response.data && error.response.data.message) {
+          this.showSnackbar(error.response.data.message, 'error');
+        } else if (error.response && error.response.status === 401) {
+          this.showSnackbar('Du har inte behörighet att skicka fakturor', 'error');
+        } else if (error.response && error.response.status === 404) {
+          this.showSnackbar('Fakturan kunde inte hittas', 'error');
+        } else {
+          this.showSnackbar('Ett oväntat fel uppstod när fakturan skulle skickas', 'error');
+        }
+      } finally {
         this.sendingEmail = false;
       }
     },
     
     async sendReminder() {
-      if (!this.isOverdue(this.invoice)) return;
+      if (!this.isOverdue(this.invoice) || !this.invoice || !this.invoice.id) return;
       
       this.sendingReminder = true;
       
       try {
-        // This would typically call an API endpoint to send a reminder email
-        // For now we'll just simulate this with a delay
-        setTimeout(() => {
-          this.showSnackbar('Påminnelse har skickats', 'success');
-          this.sendingReminder = false;
-        }, 1500);
+        // Använd dedikerad reminder-endpoint
+        const response = await emailService.sendInvoiceReminder(this.invoice.id);
+        
+        if (response.data.success) {
+          this.showSnackbar(response.data.message || 'Påminnelse har skickats via e-post', 'success');
+          // Uppdatera fakturan
+          this.fetchInvoice();
+        } else {
+          this.showSnackbar(response.data.message || 'Kunde inte skicka påminnelse', 'warning');
+        }
       } catch (error) {
         console.error('Error sending reminder:', error);
-        this.showSnackbar('Kunde inte skicka påminnelse', 'error');
+        
+        if (error.response && error.response.data && error.response.data.message) {
+          this.showSnackbar(error.response.data.message, 'error');
+        } else {
+          this.showSnackbar('Ett fel uppstod när påminnelsen skulle skickas', 'error');
+        }
+      } finally {
         this.sendingReminder = false;
       }
     },
