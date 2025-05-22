@@ -2,7 +2,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -36,10 +36,4 @@ jobs:
         
     - name: Build application
       run: mvn clean package -Pprod
-      
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: roadvault-jar
-        path: target/*.jar
-        retention-days: 30
+
