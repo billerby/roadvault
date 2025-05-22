@@ -78,23 +78,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/public/**").permitAll()
                         .requestMatchers("/api/v1/bath-temperatures/webhook").permitAll()  // Tillåter webhook utan autentisering
                         .requestMatchers("/api/v1/debug/ttn-api").authenticated()  // Kräver autentisering men ej specifik roll (PreAuthorize hanterar detta)
-                        // Legacy API endpoints (without /api prefix)
-                        .requestMatchers("/v1/auth/login").permitAll()
-                        .requestMatchers("/v1/health").permitAll()
-                        .requestMatchers("/v1/public/**").permitAll()
-                        // Frontend static resources
-                        .requestMatchers("/", "/index.html").permitAll()
-                        .requestMatchers("/assets/**").permitAll()
-                        .requestMatchers("/favicon.ico", "/favicon.png", "/favicon.svg").permitAll()
-                        .requestMatchers("/*.png", "/*.svg", "/*.webmanifest", "/*.worker.js").permitAll()
-                        // Frontend routes (for client-side routing)
-                        .requestMatchers("/login", "/dashboard", "/members/**", "/payments/**", "/reports/**", "/admin/**", "/profile/**").permitAll()
-                        // Actuator endpoints
-                        .requestMatchers("/actuator/health").permitAll()
                         // All API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
-                        // Everything else requires authentication
-                        .anyRequest().authenticated())
+                        // Actuator endpoints
+                        .requestMatchers("/actuator/health").permitAll()
+                        // All other requests (frontend routes and static resources) are handled by WebConfig
+                        .anyRequest().permitAll())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
