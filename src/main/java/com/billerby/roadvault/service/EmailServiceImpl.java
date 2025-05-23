@@ -116,6 +116,13 @@ public class EmailServiceImpl implements EmailService {
             try {
                 InvoiceDTO invoiceDTO = invoiceService.getInvoiceWithDetailsDTOById(invoiceId);
                 
+                // Skip if no email address - log but don't count as failure
+                if (invoiceDTO.getOwnerEmail() == null || invoiceDTO.getOwnerEmail().trim().isEmpty()) {
+                    logger.warn("Skipping invoice {}: No email address for owner {}", 
+                            invoiceDTO.getInvoiceNumber(), invoiceDTO.getOwnerName());
+                    return; // Skip this invoice
+                }
+                
                 // Get or generate the PDF attachment
                 byte[] pdfBytes = invoiceService.getPdfById(invoiceId);
                 if (pdfBytes == null || pdfBytes.length == 0) {
@@ -130,13 +137,22 @@ public class EmailServiceImpl implements EmailService {
                 // Mark invoice as sent
                 invoiceService.markInvoiceAsSentDTO(invoiceId);
                 
-                // Increment success counter
+                // Only increment on successful send
                 successCount.incrementAndGet();
                 
+                logger.info("Invoice email sent successfully to: {} for invoice: {}", 
+                        invoiceDTO.getOwnerEmail(), invoiceDTO.getInvoiceNumber());
+                
+            } catch (IllegalArgumentException e) {
+                // This should not happen anymore since we check email above, but just in case
+                logger.warn("Skipped sending invoice {}: {}", invoiceId, e.getMessage());
             } catch (Exception e) {
                 logger.error("Failed to send invoice email for invoice ID: {}", invoiceId, e);
             }
         });
+        
+        logger.info("Email sending completed. Successfully sent {} out of {} invoices", 
+                successCount.get(), invoiceIds.size());
         
         return successCount.get();
     }

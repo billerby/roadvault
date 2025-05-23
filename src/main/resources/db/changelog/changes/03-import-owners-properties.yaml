@@ -56,7 +56,7 @@ databaseChangeLog:
               ('Reidun Liljeros', 'reidunviola@gmail.com', '46705528960', 'Ingetorp 164 B', '442 96', 'KODE', now()),
               ('Sigurd Walldal', 'sigurdwalldal@gmail.com', '46708272945', 'Skårsgatan 36', '412 69', 'GÖTEBORG', now()),
               ('Tony Johansson', 'tony.1963.johansson@hotmail.com', '46705369842', NULL, NULL, NULL, now()),
-              ('Elinor Bylynd', NULL, NULL, NULL, NULL, NULL, now());
+              ('Elinor Bylynd', 'elinor.bylund@hotmail.com', NULL, NULL, NULL, NULL, now());
 
         # Store owner ids in temporary table
         - sql:

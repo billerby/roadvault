@@ -168,7 +168,7 @@ export default {
       headers: [
         { title: 'Fastighetsbeteckning', key: 'propertyDesignation' },
         { title: 'Delaktighetstal', key: 'shareRatio' },
-        { title: 'Adress', key: 'address' },
+        { title: 'Epostadress', key: 'mainContact.email' },
         { title: 'Huvudkontakt', key: 'mainContact.name' },
         { title: 'Åtgärder', key: 'actions', sortable: false }
       ]

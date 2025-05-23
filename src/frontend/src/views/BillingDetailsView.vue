@@ -301,6 +301,26 @@
         <v-card-text class="rv-p-md">
           <v-row>
             <v-col cols="12" sm="6" md="4">
+              <!-- Skicka ut fakturor -->
+              <v-card outlined class="pa-4 h-100">
+                <div class="d-flex align-center mb-2">
+                  <v-icon color="primary" small class="mr-2">mdi-email-send</v-icon>
+                  <span class="subtitle-1">Skicka ut fakturor</span>
+                </div>
+                <p class="body-2 mb-4">Skicka alla fakturor för denna utdebitering via email till fastighetsägarna.</p>
+                <v-btn 
+                  color="primary" 
+                  :disabled="!billing.invoiceCount"
+                  @click="confirmSendEmails"
+                  :loading="loadingSendEmails"
+                >
+                  <v-icon left>mdi-email-send</v-icon>
+                  Skicka fakturor
+                </v-btn>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="12" sm="6" md="4">
               <!-- Skicka påminnelser -->
               <v-card outlined class="pa-4 h-100">
                 <div class="d-flex align-center mb-2">
@@ -316,26 +336,6 @@
                 >
                   <v-icon left>mdi-email-alert</v-icon>
                   Skicka påminnelser
-                </v-btn>
-              </v-card>
-            </v-col>
-            
-            <v-col cols="12" sm="6" md="4">
-              <!-- Exportera fakturor -->
-              <v-card outlined class="pa-4 h-100">
-                <div class="d-flex align-center mb-2">
-                  <v-icon color="primary" small class="mr-2">mdi-file-pdf-box</v-icon>
-                  <span class="subtitle-1">Exportera fakturor</span>
-                </div>
-                <p class="body-2 mb-4">Exportera alla fakturor för denna utdebitering till PDF-format.</p>
-                <v-btn 
-                  color="primary" 
-                  :disabled="!billing.invoiceCount"
-                  @click="exportInvoices"
-                  :loading="loadingExport"
-                >
-                  <v-icon left>mdi-file-export</v-icon>
-                  Exportera PDF
                 </v-btn>
               </v-card>
             </v-col>
@@ -380,20 +380,21 @@
         </v-card-text>
         <v-divider></v-divider>
         
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
           <v-btn
-            color="grey lighten-1"
-            text
+            outlined
+            color="grey"
+            class="mr-3"
             @click="confirmDialog = false"
           >
             Avbryt
           </v-btn>
           <v-btn 
-            color="var(--color-primary-light)"
+            color="primary"
+            elevation="2"
             @click="generateInvoices"
             :loading="loading"
-            class="rv-btn rv-btn--primary"
           >
             <v-icon left>mdi-check</v-icon>
             Generera fakturor
@@ -413,22 +414,65 @@
         </v-card-text>
         <v-divider></v-divider>
         
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-spacer></v-spacer>
           <v-btn
-            color="grey lighten-1"
-            text
+            outlined
+            color="grey"
+            class="mr-3"
             @click="deleteDialog = false"
           >
             Avbryt
           </v-btn>
           <v-btn 
             color="error"
+            elevation="2"
             @click="deleteBilling"
             :loading="loading"
           >
             <v-icon left>mdi-delete</v-icon>
             Ta bort
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog för att bekräfta email-utskick -->
+    <v-dialog v-model="sendEmailsDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h5">Skicka ut fakturor via email?</v-card-title>
+        <v-divider></v-divider>
+        <v-card-text class="rv-p-md">
+          <p>Är du säker på att du vill skicka ut alla fakturor för denna utdebitering via email?</p>
+          <p class="mt-2">Detta kommer att:</p>
+          <ul>
+            <li>Skicka {{ billing.invoiceCount }} fakturor via email</li>
+            <li>Fakturor skickas till fastighetsägarnas registrerade email-adresser</li>
+            <li>PDF-fakturor bifogas automatiskt</li>
+            <li>Fastigheter utan email-adress hoppas över</li>
+          </ul>
+          <p class="font-weight-medium mt-4">Kontrollera att alla email-adresser är korrekta innan du fortsätter!</p>
+        </v-card-text>
+        <v-divider></v-divider>
+        
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            outlined
+            color="grey"
+            class="mr-3"
+            @click="sendEmailsDialog = false"
+          >
+            Avbryt
+          </v-btn>
+          <v-btn 
+            color="primary"
+            elevation="2"
+            @click="sendInvoiceEmails"
+            :loading="loadingSendEmails"
+          >
+            <v-icon left>mdi-email-send</v-icon>
+            Skicka fakturor
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -459,6 +503,7 @@
 <script>
 import billingService from '../services/billing.service';
 import invoiceService from '../services/invoice.service';
+import emailService from '../services/email.service';
 import propertyService from '../services/property.service';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { sv } from 'date-fns/locale';
@@ -496,10 +541,11 @@ export default {
       // Dialogs
       confirmDialog: false,
       deleteDialog: false,
+      sendEmailsDialog: false,
       
       // Loading states
       loadingReminders: false,
-      loadingExport: false,
+      loadingSendEmails: false,
       
       // Snackbar
       snackbar: false,
@@ -694,44 +740,58 @@ export default {
       }
     },
     
-    async exportInvoices() {
+    confirmSendEmails() {
+      this.sendEmailsDialog = true;
+    },
+
+    async sendInvoiceEmails() {
       if (!this.billing) return;
       
-      this.loadingExport = true;
+      this.loadingSendEmails = true;
       
       try {
-        const billingId = this.billing.id;
-        const response = await billingService.getInvoicesForBilling(billingId);
-        const invoices = response.data;
+        const response = await emailService.sendInvoicesForBilling(this.billing.id);
         
-        if (invoices.length === 0) {
-          this.showSnackbar('Inga fakturor att exportera', 'info');
-          return;
+        // Debug: Logga response för att se vad vi får
+        console.log('Email response:', response.data);
+        
+        // Extrahera antal skickade fakturor
+        let successCount = 0;
+        if (typeof response.data === 'number') {
+          successCount = response.data;
+        } else if (typeof response.data === 'string') {
+          successCount = parseInt(response.data) || 0;
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          // API returnerar { success: true, sentCount: 35 }
+          successCount = response.data.sentCount || response.data.count || response.data.successCount || response.data.sent || 0;
         }
         
-        // Samla alla faktura-ID
-        const invoiceIds = invoices.map(invoice => invoice.id);
+        const totalInvoices = parseInt(this.billing.invoiceCount) || 0;
         
-        // Anropa export-API
-        const exportResponse = await invoiceService.exportInvoicesToPdf(invoiceIds);
+        console.log('Parsed - Success:', successCount, 'Total:', totalInvoices);
         
-        // Skapa blob och ladda ner
-        const blob = new Blob([exportResponse.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Fakturor_${this.billing.year}_${this.billing.description.replace(/\s+/g, '_')}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        this.sendEmailsDialog = false;
         
-        this.showSnackbar('Fakturor exporterade', 'success');
+        if (successCount === 0) {
+          // Inga fakturor skickades alls
+          this.showSnackbar('Inga fakturor kunde skickas. Kontrollera att fastighetsägarna har email-adresser.', 'error');
+        } else if (successCount === totalInvoices) {
+          // Alla fakturor skickades
+          this.showSnackbar(`Alla ${successCount} fakturor har skickats via email`, 'success');
+        } else {
+          // Några fakturor skickades, men inte alla
+          const failedCount = totalInvoices - successCount;
+          this.showSnackbar(
+            `${successCount} av ${totalInvoices} fakturor skickades. ${failedCount} kunde inte skickas (saknar email-adress).`, 
+            'warning'
+          );
+        }
       } catch (error) {
-        console.error('Fel vid export av fakturor:', error);
-        this.showSnackbar('Kunde inte exportera fakturor', 'error');
+        console.error('Fel vid skickande av fakturor:', error);
+        this.showSnackbar('Kunde inte skicka fakturor via email', 'error');
+        this.sendEmailsDialog = false;
       } finally {
-        this.loadingExport = false;
+        this.loadingSendEmails = false;
       }
     },
     
