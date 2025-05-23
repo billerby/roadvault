@@ -269,22 +269,21 @@
               offset-y
               min-width="290px"
             >
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-text-field
                   v-model="formattedIssueDate"
                   label="Utskriftsdatum"
                   readonly
                   outlined
                   dense
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   required
                   :rules="[v => !!v || 'Utskriftsdatum är obligatoriskt']"
                 ></v-text-field>
               </template>
               <v-date-picker
                 v-model="editedBilling.issueDate"
-                @input="issueDateMenu = false"
+                @update:model-value="issueDateMenu = false"
                 locale="sv-SE"
               ></v-date-picker>
             </v-menu>
@@ -297,22 +296,21 @@
               offset-y
               min-width="290px"
             >
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator="{ props }">
                 <v-text-field
                   v-model="formattedDueDate"
                   label="Förfallodatum"
                   readonly
                   outlined
                   dense
-                  v-bind="attrs"
-                  v-on="on"
+                  v-bind="props"
                   required
                   :rules="[v => !!v || 'Förfallodatum är obligatoriskt']"
                 ></v-text-field>
               </template>
               <v-date-picker
                 v-model="editedBilling.dueDate"
-                @input="dueDateMenu = false"
+                @update:model-value="dueDateMenu = false"
                 locale="sv-SE"
               ></v-date-picker>
             </v-menu>
@@ -588,16 +586,21 @@ export default {
       this.editedBilling.year = new Date().getFullYear();
       // Sätt standardbeskrivning
       this.editedBilling.description = `Utdebitering av ordinarie årsavgift ${this.editedBilling.year}`;
+      // Återställ checkbox-värde
+      this.generateInvoicesDirectly = false;
       this.billingDialog = true;
     },
     
     editBilling(billing) {
       this.editedBilling = { ...billing };
+      // Vid redigering ska checkbox alltid vara false
+      this.generateInvoicesDirectly = false;
       this.billingDialog = true;
     },
     
     closeBillingDialog() {
       this.billingDialog = false;
+      this.generateInvoicesDirectly = false; // Återställ checkbox
       this.$refs.form.reset();
     },
     

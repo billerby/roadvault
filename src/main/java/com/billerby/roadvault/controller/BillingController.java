@@ -5,6 +5,7 @@ import com.billerby.roadvault.dto.InvoiceDTO;
 import com.billerby.roadvault.model.Invoice;
 import com.billerby.roadvault.service.BillingService;
 import com.billerby.roadvault.service.InvoiceService;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/billings")
 public class BillingController {
-    
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(BillingController.class);
     private final BillingService billingService;
     private final InvoiceService invoiceService;
     
@@ -109,12 +110,12 @@ public class BillingController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BillingDTO> createBilling(
             @RequestBody BillingDTO billingDTO,
-            @RequestParam(defaultValue = "false") String generateInvoicesParam) {
+            @RequestParam(defaultValue = "false") String generateInvoices) {
         
         // Convert the string parameter to boolean, handling various formats
-        boolean generateInvoices = Boolean.parseBoolean(generateInvoicesParam);
+        boolean generateInvoicesBoolean = Boolean.parseBoolean(generateInvoices);
         
-        BillingDTO createdBillingDTO = billingService.createBillingWithInvoicesDTO(billingDTO, generateInvoices);
+        BillingDTO createdBillingDTO = billingService.createBillingWithInvoicesDTO(billingDTO, generateInvoicesBoolean);
         return new ResponseEntity<>(createdBillingDTO, HttpStatus.CREATED);
     }
     

@@ -347,10 +347,9 @@
                   <v-icon color="error" small class="mr-2">mdi-delete</v-icon>
                   <span class="subtitle-1">Ta bort utdebitering</span>
                 </div>
-                <p class="body-2 mb-4">Ta bort denna utdebitering. Endast möjligt om inga fakturor har genererats.</p>
+                <p class="body-2 mb-4">Ta bort denna utdebitering. Detta kommer även att ta bort alla relaterade fakturor.</p>
                 <v-btn 
                   color="error" 
-                  :disabled="billing.invoiceCount > 0"
                   @click="confirmDelete"
                 >
                   <v-icon left>mdi-delete</v-icon>
@@ -410,7 +409,10 @@
         <v-divider></v-divider>
         <v-card-text class="rv-p-md">
           <p>Är du säker på att du vill ta bort denna utdebitering?</p>
-          <p class="font-weight-medium mt-4">Denna åtgärd kan inte ångras!</p>
+          <p v-if="billing && billing.invoiceCount > 0" class="mt-2">
+            <strong>Varning:</strong> Detta kommer även att ta bort alla {{ billing.invoiceCount }} relaterade fakturor.
+          </p>
+          <p class="font-weight-medium mt-4 red--text">Denna åtgärd kan inte ångras!</p>
         </v-card-text>
         <v-divider></v-divider>
         

@@ -231,7 +231,8 @@ public class BillingService {
             invoiceService.generateInvoicesForBilling(createdBilling.getId());
         }
         
-        return getBillingWithInvoicesById(createdBilling.getId());
+        Billing billingWithInvoices = getBillingWithInvoicesById(createdBilling.getId());
+        return billingWithInvoices;
     }
     
     /**
