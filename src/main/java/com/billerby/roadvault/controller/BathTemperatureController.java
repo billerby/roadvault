@@ -194,6 +194,17 @@ public class BathTemperatureController {
     }
     
     /**
+     * Get health status of the temperature polling service
+     * 
+     * @return Health status information
+     */
+    @GetMapping("/polling/health")
+    public ResponseEntity<Map<String, Object>> getPollingHealth() {
+        Map<String, Object> healthStatus = simpleBathTemperaturePollingService.getHealthStatus();
+        return ResponseEntity.ok(healthStatus);
+    }
+    
+    /**
      * Manually trigger a temperature data poll from The Things Network.
      * This endpoint tries all available polling services in sequence until one succeeds.
      * 

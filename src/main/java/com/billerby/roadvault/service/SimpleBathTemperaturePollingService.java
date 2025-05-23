@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Simple implementation using the exact API structure.
@@ -34,6 +35,10 @@ public class SimpleBathTemperaturePollingService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     
+    // Health monitoring
+    private final AtomicLong lastSuccessfulPoll = new AtomicLong(0);
+    private final AtomicLong lastAttemptedPoll = new AtomicLong(0);
+  
     @Autowired
     public SimpleBathTemperaturePollingService(
             BathTemperatureRepository bathTemperatureRepository,
@@ -54,6 +59,7 @@ public class SimpleBathTemperaturePollingService {
     @Async("scheduledTaskExecutor")
     @Scheduled(fixedRate = 15 * 60 * 1000) // 15 minutes in milliseconds
     public void pollTemperatureData() {
+        lastAttemptedPoll.set(System.currentTimeMillis());
         logger.info("Polling for new temperature data from The Things Network using async implementation...");
         
         try {
@@ -77,6 +83,7 @@ public class SimpleBathTemperaturePollingService {
                 // Log the response body for debugging at debug level
                 logger.debug("API Response: {}", response.getBody());
                 processApiResponse(response.getBody());
+                lastSuccessfulPoll.set(System.currentTimeMillis());
             } else {
                 logger.warn("Failed to get temperature data. Status: {}", response.getStatusCode());
             }
@@ -302,5 +309,27 @@ public class SimpleBathTemperaturePollingService {
             logger.warn("Failed to parse Double value from {}: {}", value, e.getMessage());
             return null;
         }
+    }
+    
+    /**
+     * Get health status of the polling service
+     * @return Map with health information
+     */
+    public Map<String, Object> getHealthStatus() {
+        long currentTime = System.currentTimeMillis();
+        long lastSuccessTime = lastSuccessfulPoll.get();
+        long lastAttemptTime = lastAttemptedPoll.get();
+        
+        boolean isHealthy = (currentTime - lastSuccessTime) < (20 * 60 * 1000); // 20 minutes
+        boolean isRunning = (currentTime - lastAttemptTime) < (20 * 60 * 1000); // 20 minutes
+        
+        return Map.of(
+            "healthy", isHealthy,
+            "running", isRunning,
+            "lastSuccessfulPoll", lastSuccessTime > 0 ? Instant.ofEpochMilli(lastSuccessTime).toString() : "never",
+            "lastAttemptedPoll", lastAttemptTime > 0 ? Instant.ofEpochMilli(lastAttemptTime).toString() : "never",
+            "minutesSinceLastSuccess", lastSuccessTime > 0 ? (currentTime - lastSuccessTime) / (60 * 1000) : -1,
+            "minutesSinceLastAttempt", lastAttemptTime > 0 ? (currentTime - lastAttemptTime) / (60 * 1000) : -1
+        );
     }
 }
