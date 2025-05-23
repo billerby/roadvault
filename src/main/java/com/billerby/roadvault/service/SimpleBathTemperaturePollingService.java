@@ -38,7 +38,7 @@ public class SimpleBathTemperaturePollingService {
     // Health monitoring
     private final AtomicLong lastSuccessfulPoll = new AtomicLong(0);
     private final AtomicLong lastAttemptedPoll = new AtomicLong(0);
-  
+
     @Autowired
     public SimpleBathTemperaturePollingService(
             BathTemperatureRepository bathTemperatureRepository,
@@ -308,6 +308,25 @@ public class SimpleBathTemperaturePollingService {
         } catch (Exception e) {
             logger.warn("Failed to parse Double value from {}: {}", value, e.getMessage());
             return null;
+        }
+    }
+    
+    /**
+     * Process webhook payload using the same logic as polling.
+     * This ensures consistency between webhook and polling data processing.
+     * 
+     * @param webhookPayload The raw JSON payload from TTN webhook
+     */
+    public void processWebhookPayload(String webhookPayload) {
+        logger.info("Processing webhook payload using polling logic");
+        
+        try {
+            processApiResponse(webhookPayload);
+            lastSuccessfulPoll.set(System.currentTimeMillis());
+            logger.info("Webhook payload processed successfully");
+        } catch (Exception e) {
+            logger.error("Error processing webhook payload: {}", e.getMessage(), e);
+            throw e;
         }
     }
     

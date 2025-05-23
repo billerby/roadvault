@@ -76,7 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/health").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()
-                        .requestMatchers("/api/v1/bath-temperatures/webhook").permitAll()  // Tillåter webhook utan autentisering
+                        .requestMatchers("/api/v1/bath-temperatures/webhook").permitAll()  // Tillåter webhook som har egen autentisering
                         .requestMatchers("/api/v1/debug/ttn-api").authenticated()  // Kräver autentisering men ej specifik roll (PreAuthorize hanterar detta)
                         // All API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()

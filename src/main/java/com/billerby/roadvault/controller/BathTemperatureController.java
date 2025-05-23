@@ -1,12 +1,12 @@
 package com.billerby.roadvault.controller;
 
 import com.billerby.roadvault.dto.BathTemperatureDto;
-import com.billerby.roadvault.dto.TtnWebhookDto;
 import com.billerby.roadvault.service.BathTemperatureService;
 import com.billerby.roadvault.service.SimpleBathTemperaturePollingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +27,9 @@ public class BathTemperatureController {
     private static final Logger logger = LoggerFactory.getLogger(BathTemperatureController.class);
     private final BathTemperatureService bathTemperatureService;
     private final SimpleBathTemperaturePollingService simpleBathTemperaturePollingService;
+    
+    @Value("${roadvault.webhook.apikey}")
+    private String webhookApiKey;
 
     @Autowired
     public BathTemperatureController(
@@ -37,21 +40,164 @@ public class BathTemperatureController {
     }
 
     /**
-     * Webhook endpoint for The Things Network to send temperature data
+     * Webhook endpoint for The Things Network to send temperature data.
+     * Simple API key validation for basic security.
      * 
-     * @param webhookDto The webhook payload
-     * @return ResponseEntity with the created temperature record
+     * @param rawPayload The raw JSON payload from TTN webhook
+     * @param apiKey The API key from header for authentication
+     * @return ResponseEntity with the processing result
      */
     @PostMapping("/webhook")
-    public ResponseEntity<BathTemperatureDto> processWebhook(@RequestBody TtnWebhookDto webhookDto) {
-        logger.info("Received webhook from TTN");
-        BathTemperatureDto result = bathTemperatureService.processWebhook(webhookDto);
+    public ResponseEntity<Map<String, Object>> processWebhook(
+            @RequestBody String rawPayload,
+            @RequestHeader(value = "X-Downlink-Apikey", required = false) String apiKey) {
         
-        if (result == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        logger.info("Received webhook from TTN");
+        
+        // Simple API key validation
+        if (apiKey == null || !webhookApiKey.equals(apiKey)) {
+            logger.warn("Invalid or missing API key in webhook request");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
+                "success", false,
+                "message", "Invalid or missing API key"
+            ));
         }
         
-        return ResponseEntity.ok(result);
+        try {
+            // Use the same processing logic as the polling service
+            simpleBathTemperaturePollingService.processWebhookPayload(rawPayload);
+            
+            logger.info("Webhook processed successfully");
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Webhook processed successfully"
+            ));
+        } catch (Exception e) {
+            logger.error("Error processing webhook: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "success", false,
+                "message", "Error processing webhook: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Test endpoint for webhook functionality using actual TTN payload format.
+     * This endpoint simulates a real webhook by accepting TTN-formatted JSON
+     * and processing it through the webhook logic.
+     * 
+     * @param testPayload Optional test payload. If not provided, uses a sample payload.
+     * @return ResponseEntity with the test result
+     */
+    @PostMapping("/webhook/test")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> testWebhookWithSampleData(
+            @RequestBody(required = false) String testPayload) {
+        logger.info("Testing webhook functionality with sample TTN data");
+        
+        try {
+            String payloadToTest;
+            
+            if (testPayload != null && !testPayload.trim().isEmpty()) {
+                // Use provided payload
+                payloadToTest = testPayload;
+                logger.info("Using provided test payload for webhook test");
+            } else {
+                // Use a sample TTN webhook payload for testing
+                payloadToTest = getSampleTtnWebhookPayload();
+                logger.info("Using default sample payload for webhook test");
+            }
+            
+            // Process the payload through the webhook logic
+            simpleBathTemperaturePollingService.processWebhookPayload(payloadToTest);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Webhook test completed successfully",
+                "payloadSource", testPayload != null ? "provided" : "sample"
+            ));
+        } catch (Exception e) {
+            logger.error("Error testing webhook: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                "success", false,
+                "message", "Error testing webhook: " + e.getMessage()
+            ));
+        }
+    }
+    
+    /**
+     * Get a sample TTN webhook payload for testing.
+     * This mimics the structure that TTN would send to our webhook endpoint.
+     * 
+     * @return Sample JSON payload as string
+     */
+    private String getSampleTtnWebhookPayload() {
+        return """
+            {
+              "result": {
+                "end_device_ids": {
+                  "device_id": "eui-a840411f8182f655",
+                  "application_ids": {
+                    "application_id": "badtemperatur-application"
+                  },
+                  "dev_eui": "A840411F8182F655",
+                  "dev_addr": "260BD9A5"
+                },
+                "received_at": "%s",
+                "uplink_message": {
+                  "f_port": 2,
+                  "f_cnt": 999999,
+                  "frm_payload": "TEST_PAYLOAD",
+                  "decoded_payload": {
+                    "ADC_CH0V": 0.306,
+                    "BatV": 3.359,
+                    "Digital_IStatus": "L",
+                    "Door_status": "OPEN",
+                    "EXTI_Trigger": "FALSE",
+                    "Hum_SHT": 6553.5,
+                    "TempC1": 99.9,
+                    "TempC_SHT": -0.1,
+                    "Work_mode": "IIC"
+                  },
+                  "rx_metadata": [
+                    {
+                      "gateway_ids": {
+                        "gateway_id": "test-gateway",
+                        "eui": "TEST123456789ABC"
+                      },
+                      "time": "%s",
+                      "timestamp": 4241189236,
+                      "rssi": -114,
+                      "channel_rssi": -114,
+                      "snr": -6.8,
+                      "location": {
+                        "latitude": 58.0809480895067,
+                        "longitude": 11.655348837375643,
+                        "altitude": 12,
+                        "source": "SOURCE_REGISTRY"
+                      }
+                    }
+                  ],
+                  "locations": {
+                    "user": {
+                      "latitude": 58.08212796179405,
+                      "longitude": 11.65585845708847,
+                      "source": "SOURCE_REGISTRY"
+                    }
+                  },
+                  "last_battery_percentage": {
+                    "f_cnt": 100201,
+                    "value": 100,
+                    "received_at": "%s"
+                  }
+                }
+              }
+            }
+            """.formatted(
+                java.time.Instant.now().toString(),
+                java.time.Instant.now().toString(),
+                java.time.Instant.now().toString()
+            );
     }
 
     /**
@@ -236,4 +382,5 @@ public class BathTemperatureController {
                     .body("All polling services failed:\n" + resultBuilder.toString());
         }
     }
+
 }
