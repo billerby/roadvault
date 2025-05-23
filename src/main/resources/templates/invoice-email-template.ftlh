@@ -91,6 +91,14 @@
                         <td>${amount!""}</td>
                     </tr>
                     <tr>
+                        <th>OCR-nummer:</th>
+                        <td class="highlight">${ocrNumber!""}</td>
+                    </tr>
+                    <tr>
+                        <th>Plusgiro:</th>
+                        <td>${plusgiroNumber!""}</td>
+                    </tr>
+                    <tr>
                         <th>Förfallodatum:</th>
                         <td class="highlight">${dueDate!""}</td>
                     </tr>
@@ -98,7 +106,7 @@
             </div>
             
             <div class="note">
-                <p><strong>Viktigt:</strong> Ange OCR-nummer vid betalning. OCR-numret hittar du på den bifogade fakturan.</p>
+                <p><strong>Viktigt:</strong> Ange OCR-nummer vid betalning.</p>
             </div>
             
             <p>Om du har frågor om fakturan, vänligen kontakta vägsamfällighetens styrelse.</p>

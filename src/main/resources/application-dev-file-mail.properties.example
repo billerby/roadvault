@@ -1,0 +1,16 @@
+# Alternative: File-based email testing (no Docker needed)
+# This saves emails as files instead of sending them
+
+# Email Configuration - File-based for Development
+spring.mail.host=
+spring.mail.port=
+# Use Spring's file-based mail sender for testing
+spring.mail.protocol=file
+spring.mail.properties.mail.store.protocol=file
+spring.mail.properties.mail.file.path=/tmp/roadvault-emails
+
+# Or use a simple logging approach
+# logging.level.org.springframework.mail=DEBUG
+# spring.mail.host=localhost
+# spring.mail.port=1025
+# spring.mail.test-connection=false

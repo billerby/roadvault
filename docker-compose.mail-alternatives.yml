@@ -1,0 +1,29 @@
+# Alternative 1: Papertrail (Simple and Reliable)
+services:
+  papertrail:
+    image: papertrail/papertrail:latest
+    container_name: roadvault-papertrail
+    ports:
+      - "1080:80"    # Web interface
+      - "1025:25"    # SMTP server
+    restart: unless-stopped
+
+# Alternative 2: Fake SMTP Server (Very lightweight)
+# services:
+#   fake-smtp:
+#     image: reachfive/fake-smtp-server:latest
+#     container_name: roadvault-fake-smtp
+#     ports:
+#       - "1080:5080"  # Web interface
+#       - "1025:1025"  # SMTP server
+#     restart: unless-stopped
+
+# Alternative 3: MailCrab (Rust-based, very fast)
+# services:
+#   mailcrab:
+#     image: marlonb/mailcrab:latest
+#     container_name: roadvault-mailcrab
+#     ports:
+#       - "1080:1080"  # Web interface
+#       - "1025:1025"  # SMTP server
+#     restart: unless-stopped

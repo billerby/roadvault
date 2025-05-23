@@ -125,28 +125,6 @@
 		</dependency>
 	</dependencies>
 
-	<profiles>
-		<!-- Development profile - skip frontend build for faster iteration -->
-		<profile>
-			<id>dev</id>
-			<properties>
-				<skipFrontend>true</skipFrontend>
-				<skipNpmTests>true</skipNpmTests>
-			</properties>
-		</profile>
-		
-		<!-- Production profile - ensure frontend is built -->
-		<profile>
-			<id>prod</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<skipFrontend>false</skipFrontend>
-				<skipNpmTests>false</skipNpmTests>
-			</properties>
-		</profile>
-	</profiles>
 
 	<build>
 		<plugins>

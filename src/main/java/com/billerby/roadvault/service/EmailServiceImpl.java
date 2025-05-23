@@ -1,5 +1,6 @@
 package com.billerby.roadvault.service;
 
+import com.billerby.roadvault.dto.AssociationDTO;
 import com.billerby.roadvault.dto.InvoiceDTO;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -34,6 +35,7 @@ public class EmailServiceImpl implements EmailService {
     private final Configuration freemarkerConfig;
     private final InvoiceService invoiceService;
     private final PdfGenerationService pdfGenerationService;
+    private final AssociationService associationService;
     
     @Value("${mail.fromAddress:info@apelgarden.se}")
     private String fromAddress;
@@ -46,11 +48,13 @@ public class EmailServiceImpl implements EmailService {
             JavaMailSender mailSender,
             @Qualifier("freemarkerConfiguration") Configuration freemarkerConfig,
             InvoiceService invoiceService,
-            PdfGenerationService pdfGenerationService) {
+            PdfGenerationService pdfGenerationService,
+            AssociationService associationService) {
         this.mailSender = mailSender;
         this.freemarkerConfig = freemarkerConfig;
         this.invoiceService = invoiceService;
         this.pdfGenerationService = pdfGenerationService;
+        this.associationService = associationService;
     }
 
     @Override
@@ -63,6 +67,9 @@ public class EmailServiceImpl implements EmailService {
             return;
         }
         
+        // Get association data for payment information
+        AssociationDTO associationDTO = associationService.getAssociation();
+        
         // Prepare the email context data
         Map<String, Object> model = new HashMap<>();
         model.put("invoice", invoiceDTO);
@@ -71,6 +78,9 @@ public class EmailServiceImpl implements EmailService {
         model.put("dueDate", invoiceDTO.getDueDate().toString());
         model.put("amount", invoiceDTO.getAmount());
         model.put("propertyDesignation", invoiceDTO.getPropertyDesignation());
+        model.put("ocrNumber", invoiceDTO.getOcrNumber());
+        model.put("plusgiroNumber", associationDTO.getPlusgiroNumber());
+        model.put("bankgiroNumber", associationDTO.getBankgiroNumber());
         
         // Process the email template
         Template emailTemplate = freemarkerConfig.getTemplate("invoice-email-template.ftlh");

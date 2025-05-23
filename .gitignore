@@ -13,8 +13,13 @@ target/
 .springBeans
 .sts4-cache
 
-.env.prod
+# Environment files (protect sensitive data)
 .env
+.env.*
+!.env.*.example
+
+# Remove this line since we don't use dev properties anymore
+# application-dev.properties
 
 ### IntelliJ IDEA ###
 .idea
